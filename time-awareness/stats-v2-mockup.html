@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>统计页 v2 原型</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f8f9fa; padding:20px; color:#333; }
+  .container { max-width:420px; margin:0 auto; }
+  h2 { font-size:18px; margin-bottom:4px; }
+  .subtitle { font-size:13px; color:#9ca3af; margin-bottom:24px; }
+
+  /* Summary card */
+  .summary-card { background:#fff; border-radius:16px; padding:24px; margin-bottom:20px; display:flex; align-items:center; gap:24px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  .donut { position:relative; width:120px; height:120px; flex-shrink:0; }
+  .donut svg { width:120px; height:120px; transform:rotate(-90deg); }
+  .donut-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .donut-center .big { font-size:28px; font-weight:700; letter-spacing:-1px; }
+  .donut-center .label { font-size:11px; color:#9ca3af; }
+  .summary-stats { flex:1; }
+  .summary-stats .row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; font-size:13px; }
+  .summary-stats .row .val { font-weight:600; }
+  .divider { height:1px; background:#f3f4f6; margin:8px 0; }
+  .completion { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; }
+  .completion.good { color:#4CAF84; }
+  .completion.warn { color:#F09B4A; }
+  .completion .arrow { font-size:16px; }
+
+  /* Category rows */
+  .section-title { font-size:14px; font-weight:600; margin-bottom:12px; }
+  .cat-row { background:#fff; border-radius:12px; padding:14px 16px; margin-bottom:8px; display:flex; align-items:center; gap:12px; box-shadow:0 1px 2px rgba(0,0,0,.03); }
+  .cat-row .icon { font-size:22px; width:28px; text-align:center; }
+  .cat-row .info { flex:1; min-width:0; }
+  .cat-row .name { font-size:14px; font-weight:600; margin-bottom:4px; }
+  .cat-row .time-row { display:flex; gap:12px; font-size:12px; color:#6b7280; }
+  .cat-row .time-row span { white-space:nowrap; }
+  .cat-row .bar-wrap { width:60px; flex-shrink:0; }
+  .cat-row .bar-track { height:6px; background:#f3f4f6; border-radius:3px; overflow:hidden; margin-bottom:2px; }
+  .cat-row .bar-fill { height:100%; border-radius:3px; }
+  .cat-row .bar-pct { font-size:11px; font-weight:600; text-align:right; }
+
+  /* Unplanned highlight */
+  .unplanned-note { background:#fff5f5; border:1px solid #fecdd3; border-radius:12px; padding:14px 16px; margin-bottom:8px; font-size:13px; color:#E0687A; display:flex; align-items:center; gap:8px; }
+  .unplanned-note .icon { font-size:20px; }
+
+  /* No data */
+  .empty { text-align:center; padding:40px 20px; color:#9ca3af; }
+  .empty .icon { font-size:40px; margin-bottom:8px; }
+
+  /* Legend */
+  .legend { margin-top:20px; display:flex; gap:16px; font-size:12px; color:#9ca3af; flex-wrap:wrap; }
+  .legend .dot { display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:4px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>📊 今日统计</h2>
+  <div class="subtitle">2026.07.31 周五 · 截止 14:03</div>
+
+  <!-- Summary with donut -->
+  <div class="summary-card">
+    <div class="donut">
+      <svg viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#f3f4f6" stroke-width="16"/>
+        <!-- Segments: work 42%, entertainment 25%, exercise 18%, recharge 15% -->
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#4A90D9" stroke-width="16" stroke-dasharray="264 364" stroke-dashoffset="0"/>
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#E0687A" stroke-width="16" stroke-dasharray="78.5 364" stroke-dashoffset="73"/>
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#F09B4A" stroke-width="16" stroke-dasharray="56.5 364" stroke-dashoffset="157"/>
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#8B7EC8" stroke-width="16" stroke-dasharray="47 364" stroke-dashoffset="283"/>
+      </svg>
+      <div class="donut-center">
+        <div class="big">7.3h</div>
+        <div class="label">总记录</div>
+      </div>
+    </div>
+    <div class="summary-stats">
+      <div class="row"><span>📋 计划时长</span><span class="val">6.0h</span></div>
+      <div class="row"><span>⏱ 实际记录</span><span class="val">7.3h</span></div>
+      <div class="row"><span>📱 计划外消遣</span><span class="val" style="color:#E0687A">1.2h</span></div>
+      <div class="divider"></div>
+      <div class="completion good"><span class="arrow">→</span> 计划覆盖率 82%</div>
+    </div>
+  </div>
+
+  <!-- Per category breakdown -->
+  <div class="section-title">分类明细 · 计划 vs 实际</div>
+
+  <div class="cat-row">
+    <div class="icon">💼</div>
+    <div class="info">
+      <div class="name">工作/学习</div>
+      <div class="time-row"><span>计划 3.0h</span><span>实际 3.1h</span></div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-track"><div class="bar-fill" style="width:100%;background:#4A90D9"></div></div>
+      <div class="bar-pct" style="color:#4A90D9">103%</div>
+    </div>
+  </div>
+
+  <div class="cat-row">
+    <div class="icon">🏠</div>
+    <div class="info">
+      <div class="name">家务</div>
+      <div class="time-row"><span>计划 1.0h</span><span>实际 0h</span></div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:#4CAF84"></div></div>
+      <div class="bar-pct" style="color:#9ca3af">0%</div>
+    </div>
+  </div>
+
+  <div class="cat-row">
+    <div class="icon">🏃</div>
+    <div class="info">
+      <div class="name">锻炼</div>
+      <div class="time-row"><span>计划 1.0h</span><span>实际 1.0h</span></div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-track"><div class="bar-fill" style="width:80%;background:#F09B4A"></div></div>
+      <div class="bar-pct" style="color:#F09B4A">100%</div>
+    </div>
+  </div>
+
+  <div class="cat-row">
+    <div class="icon">🔋</div>
+    <div class="info">
+      <div class="name">充电</div>
+      <div class="time-row"><span>计划 1.0h</span><span>实际 1.3h</span></div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-track"><div class="bar-fill" style="width:100%;background:#8B7EC8"></div></div>
+      <div class="bar-pct" style="color:#8B7EC8">130%</div>
+    </div>
+  </div>
+
+  <div class="cat-row">
+    <div class="icon">📱</div>
+    <div class="info">
+      <div class="name">消遣</div>
+      <div class="time-row"><span>计划 0h</span><span>实际 1.2h</span></div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-track"><div class="bar-fill" style="width:100%;background:#E0687A"></div></div>
+      <div class="bar-pct" style="color:#E0687A">—</div>
+    </div>
+  </div>
+
+  <div class="unplanned-note">
+    <span class="icon">⚠️</span>
+    <span>1.2 小时消遣没有对应计划 — 属于计划外时间</span>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <span><span class="dot" style="background:#4A90D9"></span>工作</span>
+    <span><span class="dot" style="background:#4CAF84"></span>家务</span>
+    <span><span class="dot" style="background:#F09B4A"></span>锻炼</span>
+    <span><span class="dot" style="background:#8B7EC8"></span>充电</span>
+    <span><span class="dot" style="background:#E0687A"></span>消遣</span>
+  </div>
+</div>
+</body>
+</html>
