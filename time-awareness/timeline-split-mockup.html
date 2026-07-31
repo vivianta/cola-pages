@@ -3,51 +3,57 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>左右分栏时间线 — 原型 v2</title>
+<title>左右分栏时间线 — 原型 v3</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f8f9fa; padding:16px; color:#333; }
   .container { max-width:480px; margin:0 auto; }
 
-  /* Header row */
   .header { display:flex; margin-bottom:4px; align-items:stretch; }
   .header .h-plan { flex:1; text-align:center; padding:6px 0; font-size:13px; font-weight:600; border-radius:8px; background:#f0f4ff; color:#7b8ba8; margin-right:2px; }
   .header .h-axis { width:44px; flex-shrink:0; }
   .header .h-rec  { flex:1; text-align:center; padding:6px 0; font-size:13px; font-weight:600; border-radius:8px; background:#f0f9f0; color:#6b8a6b; margin-left:2px; }
 
-  /* Timeline row */
+  /* Scrollable viewport */
+  .viewport { overflow-y:auto; position:relative; border-radius:0 0 8px 8px; }
+  .viewport::-webkit-scrollbar { width:4px; }
+  .viewport::-webkit-scrollbar-thumb { background:#e5e7eb; border-radius:2px; }
+
   .timeline-wrap { display:flex; position:relative; }
 
-  /* Plan column */
   .plan-col { flex:1; position:relative; border-right:1px solid #e5e7eb; margin-right:2px; }
-
-  /* Time axis between columns */
   .time-axis { width:40px; flex-shrink:0; position:relative; }
   .time-label { position:absolute; left:50%; transform:translate(-50%,-6px); font-size:9px; color:#9ca3af; white-space:nowrap; }
-
-  /* Record column */
   .record-col { flex:1; position:relative; border-left:1px solid #e5e7eb; margin-left:2px; }
 
-  /* Block styles */
-  .block { position:absolute; left:4px; right:4px; border-radius:7px; padding:6px 8px; font-size:11px; display:flex; align-items:center; gap:5px; overflow:hidden; min-height:36px; }
-  .plan-block { background:#f0f4ff; border:1.5px dashed #c4d4f0; color:#7b8ba8; }
-  .record-block { color:#5a7a5a; }
+  .block { position:absolute; left:4px; right:4px; border-radius:7px; padding:4px 8px; font-size:11px; display:flex; align-items:center; gap:5px; overflow:hidden; min-height:36px; }
   .block .time-inner { margin-left:auto; opacity:.7; font-size:10px; white-space:nowrap; }
 
-  .rec-work { background:#e8f0ff; color:#4a6fa5; }
-  .rec-house { background:#e8f8e8; color:#5a8a5a; }
-  .rec-exercise { background:#fff0e8; color:#c07840; }
-  .rec-charge { background:#f0e8ff; color:#7a5a9a; }
-  .rec-entertainment { background:#ffe8e8; color:#c04848; }
+  /* Plan blocks: pastel + dashed */
+  .plan-work        { background:#eaf0ff; border:1.5px dashed #b8c8e8; color:#6a80a8; }
+  .plan-house       { background:#eaf8ea; border:1.5px dashed #a8c8a8; color:#6a906a; }
+  .plan-exercise    { background:#fff2e8; border:1.5px dashed #e0c0a0; color:#b07850; }
+  .plan-charge      { background:#f2eaff; border:1.5px dashed #c8b8e0; color:#8a6aaa; }
+  .plan-entertain   { background:#ffeaea; border:1.5px dashed #e8b8b8; color:#b06060; }
 
-  /* NOW line */
+  /* Record blocks: saturated + solid */
+  .rec-work         { background:#dce8ff; color:#3a5a8a; border-left:3px solid #4a7abf; }
+  .rec-house        { background:#dcf0dc; color:#3a6a3a; border-left:3px solid #4a9a4a; }
+  .rec-exercise     { background:#ffe8d8; color:#a06030; border-left:3px solid #e88840; }
+  .rec-charge       { background:#e8dcf6; color:#6a4a8a; border-left:3px solid #8a5ac0; }
+  .rec-entertain    { background:#ffe0e0; color:#903030; border-left:3px solid #d04848; }
+
   .now-line { position:absolute; left:0; right:0; height:2px; background:#ef4444; z-index:10; }
   .now-label { position:absolute; font-size:10px; color:#ef4444; font-weight:700; z-index:11; }
 
-  /* Gaps */
   .gap { position:absolute; left:4px; right:4px; border-radius:4px; font-size:9px; color:#d1d5db; display:flex; align-items:center; justify-content:center; border:1px dashed #eee; background:#fafafa; }
 
-  .note { margin-top:20px; font-size:12px; text-align:center; color:#9ca3af; line-height:1.6; }
+  .legend { margin-top:12px; display:flex; flex-wrap:wrap; gap:6px 12px; font-size:10px; color:#9ca3af; justify-content:center; }
+  .legend span { display:flex; align-items:center; gap:3px; }
+  .legend .dot { width:8px; height:8px; border-radius:2px; display:inline-block; }
+  .legend .dot.w { background:#4a7abf; } .legend .dot.h { background:#4a9a4a; }
+  .legend .dot.e { background:#e88840; } .legend .dot.c { background:#8a5ac0; }
+  .legend .dot.n { background:#d04848; }
 </style>
 </head>
 <body>
@@ -58,15 +64,20 @@
     <div class="h-rec">⏱️ 记录</div>
   </div>
 
-  <div class="timeline-wrap">
-    <div class="plan-col" id="planCol"></div>
-    <div class="time-axis" id="axis"></div>
-    <div class="record-col" id="recordCol"></div>
+  <div class="viewport" id="viewport">
+    <div class="timeline-wrap">
+      <div class="plan-col" id="planCol"></div>
+      <div class="time-axis" id="axis"></div>
+      <div class="record-col" id="recordCol"></div>
+    </div>
   </div>
 
-  <div class="note">
-    时间轴在中间，左右时间严格对齐。<br>
-    左边计划（虚线），右边记录（实色）。各管各的，对比干净。
+  <div class="legend">
+    <span><span class="dot w"></span>工作/学习</span>
+    <span><span class="dot h"></span>家务</span>
+    <span><span class="dot e"></span>锻炼</span>
+    <span><span class="dot c"></span>充电</span>
+    <span><span class="dot n"></span>消遣</span>
   </div>
 </div>
 
@@ -78,22 +89,32 @@ const TOTAL_MIN = (END_HOUR - START_HOUR) * 60;
 const TOTAL_PX = TOTAL_MIN * PX_PER_MIN;
 
 const plans = [
-  { cat:'💼', label:'工作', start:'07:00', end:'08:00', color:'work' },
-  { cat:'💼', label:'工作', start:'11:00', end:'12:00', color:'work' },
-  { cat:'🔋', label:'充电', start:'14:00', end:'15:00', color:'charge' },
+  { cat:'💼', label:'工作', start:'07:00', end:'08:00', cls:'plan-work' },
+  { cat:'💼', label:'工作', start:'11:00', end:'12:00', cls:'plan-work' },
+  { cat:'🔋', label:'充电', start:'14:00', end:'15:00', cls:'plan-charge' },
 ];
 const records = [
-  { cat:'💼', label:'工作/学习', start:'07:00', end:'08:12', color:'rec-work' },
-  { cat:'📱', label:'消遣', start:'09:48', end:'10:31', color:'rec-entertainment' },
-  { cat:'💼', label:'工作/学习', start:'11:00', end:'12:01', color:'rec-work' },
-  { cat:'🏠', label:'家务', start:'12:35', end:'12:52', color:'rec-house' },
-  { cat:'🔋', label:'充电', start:'13:02', end:'13:48', color:'rec-charge' },
+  { cat:'💼', label:'工作/学习', start:'07:00', end:'08:12', cls:'rec-work' },
+  { cat:'📱', label:'消遣',  start:'09:48', end:'10:31', cls:'rec-entertain' },
+  { cat:'💼', label:'工作/学习', start:'11:00', end:'12:01', cls:'rec-work' },
+  { cat:'🏠', label:'家务',    start:'12:35', end:'12:52', cls:'rec-house' },
+  { cat:'🔋', label:'充电',    start:'13:02', end:'13:48', cls:'rec-charge' },
 ];
 
 function timeToMin(t) { const [h,m]=t.split(':').map(Number); return (h-START_HOUR)*60+m; }
 function timeToPx(t) { return Math.max(0, timeToMin(t) * PX_PER_MIN); }
 
-// Time labels in center axis
+function minToPx(m) { return m * PX_PER_MIN; }
+
+// Find viewport range: earliest start to NOW (or latest end)
+const allStarts = [...plans.map(p=>timeToMin(p.start)), ...records.map(r=>timeToMin(r.start))];
+const allEnds   = [...plans.map(p=>timeToMin(p.end)),   ...records.map(r=>timeToMin(r.end))];
+const firstMin = Math.min(...allStarts);
+const nowMin = timeToMin('14:30');
+const lastMin = Math.max(...allEnds);
+const viewEndMin = Math.max(nowMin, lastMin) + 15; // 15min padding after
+
+// Build time labels
 const axis = document.getElementById('axis');
 axis.style.height = TOTAL_PX + 'px';
 for (let h = START_HOUR; h <= END_HOUR; h++) {
@@ -112,7 +133,7 @@ plans.forEach(p => {
   const top = timeToPx(p.start);
   const h = timeToPx(p.end) - top;
   const el = document.createElement('div');
-  el.className = 'block plan-block';
+  el.className = 'block ' + p.cls;
   el.style.top = top+'px';
   el.style.height = h+'px';
   el.innerHTML = `${p.cat} ${p.label}<span class="time-inner">${p.start}–${p.end}</span>`;
@@ -126,7 +147,7 @@ records.forEach(r => {
   const top = timeToPx(r.start);
   const h = timeToPx(r.end) - top;
   const el = document.createElement('div');
-  el.className = 'block record-block ' + r.color;
+  el.className = 'block ' + r.cls;
   el.style.top = top+'px';
   el.style.height = h+'px';
   el.innerHTML = `${r.cat} ${r.label}<span class="time-inner">${r.start}–${r.end}</span>`;
@@ -141,9 +162,10 @@ records.forEach(r => {
   if (dur >= 5) {
     const el = document.createElement('div');
     el.className = 'gap';
-    el.style.top = (prevEnd * PX_PER_MIN)+'px';
-    el.style.height = (dur * PX_PER_MIN)+'px';
-    el.textContent = dur >= 60 ? `${Math.floor(dur/60)}h${dur%60?' '+(dur%60)+'m':''}` : `${Math.round(dur)}m`;
+    el.style.top = minToPx(prevEnd)+'px';
+    el.style.height = minToPx(dur)+'px';
+    const m = Math.round(dur);
+    el.textContent = m >= 60 ? `${Math.floor(m/60)}h${m%60?' '+(m%60)+'m':''}` : `${m}m`;
     recordCol.appendChild(el);
   }
   prevEnd = timeToMin(r.end);
@@ -152,13 +174,13 @@ if (TOTAL_MIN - prevEnd >= 5) {
   const dur = TOTAL_MIN - prevEnd;
   const el = document.createElement('div');
   el.className = 'gap';
-  el.style.top = (prevEnd * PX_PER_MIN)+'px';
-  el.style.height = (dur * PX_PER_MIN)+'px';
+  el.style.top = minToPx(prevEnd)+'px';
+  el.style.height = minToPx(dur)+'px';
   el.textContent = dur >= 60 ? `${Math.floor(dur/60)}h${dur%60?' '+(dur%60)+'m':''}` : `${Math.round(dur)}m`;
   recordCol.appendChild(el);
 }
 
-// NOW line at 14:30 across both columns
+// NOW line
 const nowPx = timeToPx('14:30');
 ['planCol','recordCol'].forEach(id => {
   const nl = document.createElement('div');
@@ -166,12 +188,17 @@ const nowPx = timeToPx('14:30');
   nl.style.top = nowPx+'px';
   document.getElementById(id).appendChild(nl);
 });
-// NOW label in the axis
 const nowLabel = document.createElement('div');
 nowLabel.className = 'now-label';
 nowLabel.style.top = (nowPx-7)+'px';
 nowLabel.textContent = 'NOW';
 axis.appendChild(nowLabel);
+
+// Set viewport height to ~400px and scroll to show first block → NOW
+const viewport = document.getElementById('viewport');
+const viewH = Math.min(420, minToPx(viewEndMin - firstMin) + 60);
+viewport.style.height = viewH + 'px';
+viewport.scrollTop = minToPx(firstMin) - 16; // small top padding
 </script>
 </body>
 </html>
