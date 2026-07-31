@@ -415,6 +415,19 @@ body {
   50% { box-shadow: 0 2px 18px rgba(0,0,0,0.28); }
 }
 
+/* ===== Dual-column timeline ===== */
+.timeline-dual {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.tl-dual-left, .tl-dual-right { min-width: 0; }
+.tl-dual-label {
+  font-size: 12px; font-weight: 700; color: var(--text-secondary);
+  text-align: center; padding: 6px 0 10px; letter-spacing: 1px;
+}
+.tl-dual-empty {
+  text-align: center; padding: 30px 10px; font-size: 13px; color: var(--text-muted);
+}
+
 @media (max-width: 400px) {
   .tl-v2-plan, .tl-v2-actual { font-size: 12px; padding: 8px 10px; }
   .tl-v2-dur { font-size: 11px; }
@@ -1065,74 +1078,104 @@ function getActivePlanRemaining() {
   return Math.max(0,Math.floor((new Date(activePlan.end)-Date.now())/60000));
 }
 
-// ========== TIMELINE BLOCK CONSTRUCTION (flat list, no pairing) ==========
-function buildTimelineBlocks() {
-  const sessions = getTodaySessions(selectedDate);
+// ========== TIMELINE BLOCK CONSTRUCTION (plan/record separate columns) ==========
+function buildTimelinePlanBlocks() {
+  const sessions = getTodaySessions(selectedDate).filter(s => s.type === 'plan');
   const blocks = sessions.map(s => ({
-    type: s.type, // 'plan' or 'record'
     session: s,
     start: new Date(s.start),
-    end: s.end ? new Date(s.end) : null, // null = active
+    end: new Date(s.end),
   }));
   blocks.sort((a, b) => a.start - b.start);
-
-  // Truncate overlapping blocks: if block A ends after block B starts, truncate A to B
+  // Truncate overlapping plans
   for (let i = 0; i < blocks.length; i++) {
-    const a = blocks[i];
-    if (a.type === 'plan' && a.end) {
-      for (let j = i + 1; j < blocks.length; j++) {
-        const b = blocks[j];
-        if (a.end > b.start) {
-          a.end = new Date(b.start);
-          break;
-        }
+    for (let j = i + 1; j < blocks.length; j++) {
+      if (blocks[i].end > blocks[j].start) {
+        blocks[i].end = new Date(blocks[j].start);
+        break;
       }
     }
   }
-
   return blocks;
 }
 
-// These helper functions are no longer needed for flat timeline
+function buildTimelineRecordBlocks() {
+  const sessions = getTodaySessions(selectedDate).filter(s => s.type === 'record');
+  const blocks = sessions.map(s => ({
+    session: s,
+    start: new Date(s.start),
+    end: s.end ? new Date(s.end) : null,
+  }));
+  blocks.sort((a, b) => a.start - b.start);
+  return blocks;
+}
 
-// ========== TIMELINE RENDER ==========
-function renderTimelineBlock(block, nowTime) {
-  const s = block.session;
-  const cats = block.type === 'plan' ? PLAN_CATEGORIES : RECORD_CATEGORIES;
-  const cat = cats[s.category];
-  const isActive = block.type === 'record' && !s.end;
-  const durMin = isActive
-    ? Math.max(1, (nowTime - block.start) / 60000)
-    : Math.max(1, (block.end - block.start) / 60000);
-  const h = Math.max(40, Math.ceil(durMin * 1.8));
+function renderTimelineColumn(blocks, nowTime, colType) {
+  const cats = colType === 'plan' ? PLAN_CATEGORIES : RECORD_CATEGORIES;
+  let html = '';
+  let prevEnd = new Date(0);
+  let lastHour = -1;
 
-  if (block.type === 'plan') {
-    const dur = Math.round((block.end - block.start) / 60000);
-    return `<div class="tl-v2-track plan-only ${s.category}">
-      <div class="tl-v2-plan" style="min-height:${h}px">
-        <span>${cat.icon}</span><span>${cat.name}</span>
-        <span class="tl-v2-time">${fmtTime(s.start)} – ${fmtTime(block.end)}</span>
-        <span class="tl-v2-dur">${fmtDuration(dur)}</span>
-        <span class="tl-v2-noedit">不可编辑</span>
-      </div>
-    </div>`;
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    const blockStart = b.start;
+    const isActive = colType === 'record' && !b.end;
+    const blockEnd = isActive ? nowTime : (b.end || nowTime);
+    const durMin = Math.max(1, (blockEnd - blockStart) / 60000);
+
+    // Gap before this block
+    if (blockStart > prevEnd) {
+      const gapMin = Math.round((blockStart - prevEnd) / 60000);
+      if (gapMin >= 3) {
+        const h = Math.floor(gapMin / 60);
+        const m = gapMin % 60;
+        const text = h > 0 ? `闲置 · ${h}h${m > 0 ? m + 'm' : ''}` : `闲置 · ${m}m`;
+        html += `<div class="tl-v2-gap"><span class="tl-v2-gap-dot"></span>${text}</div>`;
+      }
+    }
+
+    // Hour marker
+    const blockHour = blockStart.getHours();
+    if (blockHour !== lastHour) {
+      html += `<div class="tl-v2-hour">${String(blockHour).padStart(2,'0')}:00</div>`;
+      lastHour = blockHour;
+    }
+
+    const s = b.session;
+    const cat = cats[s.category];
+    const h = Math.max(40, Math.ceil(durMin * 1.8));
+
+    if (colType === 'plan') {
+      const dur = Math.round((blockEnd - blockStart) / 60000);
+      html += `<div class="tl-v2-track plan-only ${s.category}">
+        <div class="tl-v2-plan" style="min-height:${h}px">
+          <span>${cat.icon}</span><span>${cat.name}</span>
+          <span class="tl-v2-time">${fmtTime(s.start)} – ${fmtTime(blockEnd)}</span>
+          <span class="tl-v2-dur">${fmtDuration(dur)}</span>
+          <span class="tl-v2-noedit">不可编辑</span>
+        </div>
+      </div>`;
+    } else {
+      const endStr = isActive ? '进行中' : fmtTime(s.end);
+      const durStr = isActive ? '计时中…' : fmtDuration(Math.round(durMin));
+      const cls = 'tl-v2-track record-only ' + s.category + (isActive ? ' ongoing' : '');
+      html += `<div class="${cls}">
+        <div class="tl-v2-actual" style="min-height:${h}px">
+          <span>${cat.icon} ${cat.name}</span>
+          <span class="tl-v2-time">${fmtTime(s.start)} – ${endStr}</span>
+          <span class="tl-v2-dur">${durStr}</span>
+          <div class="tl-v2-actions">
+            <button class="tl-action-btn" onclick="event.stopPropagation();editSessionById('${s.id}')">✏️</button>
+            <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${s.id}')">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    prevEnd = blockEnd;
   }
 
-  // Record block
-  const endStr = isActive ? '进行中' : fmtTime(s.end);
-  const durStr = isActive ? '计时中…' : fmtDuration(Math.round(durMin));
-  const cls = 'tl-v2-track record-only ' + s.category + (isActive ? ' ongoing' : '');
-  return `<div class="${cls}">
-    <div class="tl-v2-actual" style="min-height:${h}px">
-      <span>${cat.icon} ${cat.name}</span>
-      <span class="tl-v2-time">${fmtTime(s.start)} – ${endStr}</span>
-      <span class="tl-v2-dur">${durStr}</span>
-      <div class="tl-v2-actions">
-        <button class="tl-action-btn" onclick="event.stopPropagation();editSessionById('${s.id}')">✏️</button>
-        <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${s.id}')">🗑</button>
-      </div>
-    </div>
-  </div>`;
+  return html;
 }
 
 function renderNowLine() {
@@ -1305,64 +1348,37 @@ function renderApp() {
     html+=`</div></div>`;
   })();
 
-  const blocks = buildTimelineBlocks();
-  if (blocks.length === 0) {
+  const planBlocks = buildTimelinePlanBlocks();
+  const recordBlocks = buildTimelineRecordBlocks();
+  const hasAnyBlocks = planBlocks.length > 0 || recordBlocks.length > 0;
+
+  if (!hasAnyBlocks) {
     const emptyMsg = isTodayView ? '今天还没有记录' : `${fmtDateFull(selectedDate)} 没有记录`;
     html+=`<div class="empty-state"><div class="empty-icon">📋</div><div>${emptyMsg}</div><div class="empty-sub">计划或记录一条来开始</div></div>`;
   } else {
-    html+=`<div class="timeline-v2">`;
+    html+=`<div class="timeline-dual">`;
     const nowTime = new Date();
-    let prevEnd = new Date(0);
-    let nowInserted = false;
-    let lastHour = -1;
 
-    for (let i = 0; i < blocks.length; i++) {
-      const block = blocks[i];
-      const blockStart = block.start;
-      // For active records, use now as the visual end; for others use stored end
-      const blockEnd = (block.type === 'record' && !block.session.end) ? nowTime : (block.end || nowTime);
-      const isActiveBlock = block.type === 'record' && !block.session.end;
+    // Shared hour markers and NOW line extracted from both columns
+    // We render columns independently; NOW line appears after the record column
+    html+=`<div class="tl-dual-left">
+      <div class="tl-dual-label">📋 计划</div>
+      ${renderTimelineColumn(planBlocks, nowTime, 'plan') || '<div class="tl-dual-empty">暂无计划</div>'}
+    </div>`;
 
-      // Gap before this block
-      if (blockStart > prevEnd) {
-        const gapMin = Math.round((blockStart - prevEnd) / 60000);
-        if (gapMin >= 3) {
-          if (isTodayView && !nowInserted && nowTime > prevEnd && nowTime <= blockStart) {
-            html += renderNowLine();
-            nowInserted = true;
-          }
-          html += renderGap(gapMin);
-        }
-      }
+    html+=`<div class="tl-dual-right">
+      <div class="tl-dual-label">⏱ 记录</div>
+      ${renderTimelineColumn(recordBlocks, nowTime, 'record') || '<div class="tl-dual-empty">暂无记录</div>'}`;
 
-      // NOW in small gap (<3min) or at boundary
-      if (isTodayView && !nowInserted && nowTime > prevEnd && nowTime < blockStart) {
+    // NOW line in record column if there's an active record
+    if (isTodayView) {
+      const hasActive = recordBlocks.some(b => !b.end);
+      if (hasActive) {
         html += renderNowLine();
-        nowInserted = true;
       }
-
-      // Hour marker
-      const blockHour = blockStart.getHours();
-      if (blockHour !== lastHour) {
-        html += `<div class="tl-v2-hour">${String(blockHour).padStart(2,'0')}:00</div>`;
-        lastHour = blockHour;
-      }
-
-      html += renderTimelineBlock(block, nowTime);
-
-      // NOW after active record block
-      if (isTodayView && !nowInserted && isActiveBlock) {
-        html += renderNowLine();
-        nowInserted = true;
-      }
-
-      prevEnd = blockEnd;
     }
 
-    // NOW after all blocks — only for today
-    if (isTodayView && !nowInserted) {
-      html += renderNowLine();
-    }
+    html+=`</div>`;
 
     html+=`</div>`;
   }
