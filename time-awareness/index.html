@@ -1162,7 +1162,6 @@ function renderOverlapBlock(block, nowTime) {
   const totalH = Math.ceil(Math.max(planTop + planH, recTop + actualH) + 10);
 
   // NOW line for active records — placed after the recorded portion
-  const nowLine = (isActive) ? '<div class="tl-v2-now"><div class="tl-v2-now-line"><span class="tl-v2-now-label">NOW</span></div></div>' : '';
 
   const endStr = isActive ? '进行中' : fmtTime(record.end);
   const durStr = isActive ? '计时中…' : fmtDuration(Math.round(recDurMin));
@@ -1182,7 +1181,6 @@ function renderOverlapBlock(block, nowTime) {
         <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${record.id}')">🗑</button>
       </div>
     </div>
-    ${nowLine}
   </div>`;
 }
 
@@ -1213,7 +1211,6 @@ function renderRecordOnlyBlock(block, nowTime) {
   const endStr = isActive ? '进行中' : fmtTime(record.end);
   const durStr = isActive ? '计时中…' : fmtDuration(dur);
   const cls = 'tl-v2-track record-only ' + record.category + (isActive ? ' ongoing' : '');
-  const nowLine = isActive ? `<div class="tl-v2-now" style="margin-top:6px"><div class="tl-v2-now-line"><span class="tl-v2-now-label">NOW</span></div></div>` : '';
   return `<div class="${cls}">
     <div class="tl-v2-actual" style="min-height:${h}px">
       <span>${cat.icon} ${cat.name}</span>
@@ -1223,7 +1220,7 @@ function renderRecordOnlyBlock(block, nowTime) {
         <button class="tl-action-btn" onclick="event.stopPropagation();editSessionById('${record.id}')">✏️</button>
         <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${record.id}')">🗑</button>
       </div>
-    </div>${nowLine}
+    </div>
   </div>`;
 }
 
@@ -1413,7 +1410,7 @@ function renderApp() {
       const blockStart = getBlockStartTime(block);
       const blockEnd = getBlockEndTime(block);
 
-      // Gap before this block
+      // Gap before this block (skip if active record's prevEnd stretches past this block's start)
       if (prevEnd && blockStart > prevEnd) {
         const gapMin = Math.round((blockStart - prevEnd) / 60000);
         if (gapMin >= 3) {
@@ -1439,6 +1436,14 @@ function renderApp() {
       }
 
       html += renderTimelineBlock(block, nowTime);
+
+      // If this block has an active record, NOW goes right after it
+      if (isTodayView && !nowInserted && blockHasActiveRecord(block)) {
+        html += renderNowLine();
+        nowInserted = true;
+      }
+
+      // Cap prevEnd to avoid propagating active-record "now" time forward
       prevEnd = blockEnd;
     }
 
