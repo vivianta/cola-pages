@@ -28,9 +28,19 @@
   .cat-btn { flex:1; padding:10px 3px; border-radius:10px; border:1.5px solid #e5e7eb; background:#fff; font-size:10px; cursor:pointer; text-align:center; display:flex; flex-direction:column; align-items:center; gap:3px; color:#6b7280; transition:.15s; }
   .cat-btn .emoji { font-size:17px; }
   .cat-btn:hover { border-color:#b0b8c0; }
-  .cat-btn.active { border-color:#4A90D9; color:#4A90D9; background:#f0f6ff; }
-  .cat-btn.idle { color:#b0b0b0; border-color:#ddd; }
-  .cat-btn.idle:hover { border-color:#c0c0c0; background:#fafafa; }
+  .cat-btn:active { transform:scale(.96); }
+  .cat-btn.work   { border-color:#c8d4ec; color:#6a80a8; background:#f5f8ff; }
+  .cat-btn.work.active   { border-color:#3366cc; color:#3366cc; background:#dce8ff; }
+  .cat-btn.house  { border-color:#d4c8e8; color:#8a6aaa; background:#f8f4ff; }
+  .cat-btn.house.active  { border-color:#7733aa; color:#7733aa; background:#e8dcf6; }
+  .cat-btn.exer   { border-color:#e8d0b8; color:#c09878; background:#fff8f4; }
+  .cat-btn.exer.active   { border-color:#cc6622; color:#cc6622; background:#ffe8d8; }
+  .cat-btn.charge { border-color:#bcd0bc; color:#8aaa8a; background:#f5faf5; }
+  .cat-btn.charge.active { border-color:#338833; color:#338833; background:#dcf0dc; }
+  .cat-btn.ent    { border-color:#ecc8c8; color:#c08888; background:#fff4f4; }
+  .cat-btn.ent.active    { border-color:#cc3333; color:#cc3333; background:#ffe0e0; }
+  .cat-btn.idle   { border-color:#dcdcdc; color:#b0b0b0; background:#fafafa; }
+  .cat-btn.idle:hover { border-color:#c0c0c0; }
   .cat-btn.record-stop { flex:0.8; background:#ffe8e8; border-color:#e8c0c0; color:#c04040; font-weight:600; }
   .cat-btn.record-stop .emoji { font-size:17px; }
 
@@ -93,11 +103,11 @@
 
   <!-- Category buttons — switches content -->
   <div class="cat-row" id="catRow">
-    <button class="cat-btn active"><span class="emoji">💼</span>工作</button>
-    <button class="cat-btn"><span class="emoji">🏠</span>家务</button>
-    <button class="cat-btn"><span class="emoji">🏃</span>锻炼</button>
-    <button class="cat-btn"><span class="emoji">🔋</span>充电</button>
-    <button class="cat-btn"><span class="emoji">📱</span>消遣</button>
+    <button class="cat-btn work active"><span class="emoji">💼</span>工作</button>
+    <button class="cat-btn house"><span class="emoji">🏠</span>家务</button>
+    <button class="cat-btn exer"><span class="emoji">🏃</span>锻炼</button>
+    <button class="cat-btn charge"><span class="emoji">🔋</span>充电</button>
+    <button class="cat-btn ent"><span class="emoji">📱</span>消遣</button>
     <button class="cat-btn idle"><span class="emoji">🕊️</span>空闲</button>
   </div>
 
@@ -141,21 +151,21 @@ function switchMode(mode) {
     btns[0].classList.add('active'); btns[1].classList.remove('active');
     topBlock.innerHTML = '<span class="icon">📋</span><div><div class="text">计划模式</div><div class="sub">选择分类 · 每次 1 小时 · 新计划自动截断上一个</div></div>';
     catRow.innerHTML = `
-      <button class="cat-btn active"><span class="emoji">💼</span>工作</button>
-      <button class="cat-btn"><span class="emoji">🏠</span>家务</button>
-      <button class="cat-btn"><span class="emoji">🏃</span>锻炼</button>
-      <button class="cat-btn"><span class="emoji">🔋</span>充电</button>
-      <button class="cat-btn"><span class="emoji">📱</span>消遣</button>
+      <button class="cat-btn work active"><span class="emoji">💼</span>工作</button>
+      <button class="cat-btn house"><span class="emoji">🏠</span>家务</button>
+      <button class="cat-btn exer"><span class="emoji">🏃</span>锻炼</button>
+      <button class="cat-btn charge"><span class="emoji">🔋</span>充电</button>
+      <button class="cat-btn ent"><span class="emoji">📱</span>消遣</button>
       <button class="cat-btn idle"><span class="emoji">🕊️</span>空闲</button>`;
   } else {
     btns[1].classList.add('active'); btns[0].classList.remove('active');
     topBlock.innerHTML = '<span class="icon">⏱️</span><div><div class="text">记录模式</div><div class="sub">点击分类开始计时</div></div><div class="timer-label"><div class="timer-cat"><span class="pause-indicator"></span> 💼 工作中</div><div class="timer-val">00:32:15</div></div>';
     catRow.innerHTML = `
-      <button class="cat-btn"><span class="emoji">💼</span>工作</button>
-      <button class="cat-btn"><span class="emoji">🏠</span>家务</button>
-      <button class="cat-btn"><span class="emoji">🏃</span>锻炼</button>
-      <button class="cat-btn"><span class="emoji">🔋</span>充电</button>
-      <button class="cat-btn"><span class="emoji">📱</span>消遣</button>
+      <button class="cat-btn work"><span class="emoji">💼</span>工作</button>
+      <button class="cat-btn house"><span class="emoji">🏠</span>家务</button>
+      <button class="cat-btn exer"><span class="emoji">🏃</span>锻炼</button>
+      <button class="cat-btn charge"><span class="emoji">🔋</span>充电</button>
+      <button class="cat-btn ent"><span class="emoji">📱</span>消遣</button>
       <button class="cat-btn record-stop"><span class="emoji">⏸️</span>停止</button>`;
   }
 }
