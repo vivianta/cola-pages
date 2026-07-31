@@ -1119,11 +1119,12 @@ function getBlockStartTime(block) {
 function getBlockEndTime(block) {
   if (block.type === 'plan-only') return new Date(block.plan.end);
   if (block.type === 'record-only') {
-    return block.record.end ? new Date(block.record.end) : new Date();
+    // Active record: use start + 1h as placeholder for ordering (visual extends to now)
+    if (!block.record.end) return new Date(new Date(block.record.start).getTime() + 3600000);
+    return new Date(block.record.end);
   }
-  const planEnd = new Date(block.plan.end);
-  const recEnd = block.record.end ? new Date(block.record.end) : new Date();
-  return new Date(Math.max(planEnd, recEnd));
+  // Overlap with active record: use plan end to prevent extending past next block
+  return new Date(block.plan.end);
 }
 
 // ========== TIMELINE V2 RENDER HELPERS ==========
@@ -1145,25 +1146,34 @@ function renderOverlapBlock(block, nowTime) {
 
   const planDurMin = Math.max(1, (planEnd - planStart) / 60000);
   const recDurMin = Math.max(1, (recEnd - recStart) / 60000);
-  const offsetMin = Math.max(0, (recStart - planStart) / 60000);
+  const offsetMin = (recStart - planStart) / 60000;
 
   const PX_PER_MIN = 1.8;
-  const planH = Math.max(48, planDurMin * PX_PER_MIN);
-  const offsetPx = offsetMin * PX_PER_MIN;
-  const actualH = Math.max(36, recDurMin * PX_PER_MIN);
-  const totalH = Math.ceil(Math.max(planH, offsetPx + actualH + 8));
-  const topPx = Math.ceil(offsetPx + 3);
+  const planH = Math.max(44, Math.ceil(planDurMin * PX_PER_MIN));
+  const actualH = Math.max(38, Math.ceil(recDurMin * PX_PER_MIN));
+
+  // Position: if record starts before plan, push plan down; otherwise push record down
+  let planTop = 0, recTop = 0;
+  if (offsetMin < 0) {
+    planTop = Math.ceil(-offsetMin * PX_PER_MIN);
+  } else {
+    recTop = Math.ceil(offsetMin * PX_PER_MIN);
+  }
+  const totalH = Math.ceil(Math.max(planTop + planH, recTop + actualH) + 10);
+
+  // NOW line for active records — placed after the recorded portion
+  const nowLine = (isActive) ? '<div class="tl-v2-now"><div class="tl-v2-now-line"><span class="tl-v2-now-label">NOW</span></div></div>' : '';
 
   const endStr = isActive ? '进行中' : fmtTime(record.end);
   const durStr = isActive ? '计时中…' : fmtDuration(Math.round(recDurMin));
   const trackCls = 'tl-v2-track overlap ' + plan.category + (isActive ? ' ongoing' : '');
 
-  return `<div class="${trackCls}" style="min-height:${totalH}px">
-    <div class="tl-v2-plan" style="min-height:${Math.ceil(planH)}px">
+  return `<div class="${trackCls}" style="position:relative;min-height:${totalH}px">
+    <div class="tl-v2-plan" style="position:absolute;left:4px;right:4px;top:${planTop}px;min-height:${planH}px;padding:8px 14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
       <span>${planCat.icon}</span><span>计划：${planCat.name}</span>
       <span class="tl-v2-time">${fmtTime(plan.start)} – ${fmtTime(plan.end)}</span>
     </div>
-    <div class="tl-v2-actual ${record.category}" style="top:${topPx}px;min-height:${Math.ceil(actualH)}px">
+    <div class="tl-v2-actual ${record.category}" style="position:absolute;left:4px;right:4px;top:${recTop}px;min-height:${actualH}px;padding:8px 14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
       <span>${recCat.icon} ${recCat.name}</span>
       <span class="tl-v2-time">${fmtTime(record.start)} – ${endStr}</span>
       <span class="tl-v2-dur">${durStr}</span>
@@ -1172,6 +1182,7 @@ function renderOverlapBlock(block, nowTime) {
         <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${record.id}')">🗑</button>
       </div>
     </div>
+    ${nowLine}
   </div>`;
 }
 
@@ -1195,14 +1206,16 @@ function renderRecordOnlyBlock(block, nowTime) {
   const record = block.record;
   const cat = RECORD_CATEGORIES[record.category];
   const isActive = !record.end;
-  const dur = isActive ? Math.max(0, Math.floor((nowTime - new Date(record.start)) / 60000)) : sessionDuration(record);
-  const recDurMin = Math.max(1, isActive ? (nowTime - new Date(record.start)) / 60000 : (new Date(record.end) - new Date(record.start)) / 60000);
-  const h = Math.max(40, recDurMin * 1.8);
+  const now = new Date();
+  const dur = isActive ? Math.max(0, Math.floor((now - new Date(record.start)) / 60000)) : sessionDuration(record);
+  const recDurMin = Math.max(1, isActive ? (now - new Date(record.start)) / 60000 : (new Date(record.end) - new Date(record.start)) / 60000);
+  const h = Math.max(40, Math.ceil(recDurMin * 1.8));
   const endStr = isActive ? '进行中' : fmtTime(record.end);
   const durStr = isActive ? '计时中…' : fmtDuration(dur);
   const cls = 'tl-v2-track record-only ' + record.category + (isActive ? ' ongoing' : '');
+  const nowLine = isActive ? `<div class="tl-v2-now" style="margin-top:6px"><div class="tl-v2-now-line"><span class="tl-v2-now-label">NOW</span></div></div>` : '';
   return `<div class="${cls}">
-    <div class="tl-v2-actual" style="min-height:${Math.ceil(h)}px">
+    <div class="tl-v2-actual" style="min-height:${h}px">
       <span>${cat.icon} ${cat.name}</span>
       <span class="tl-v2-time">${fmtTime(record.start)} – ${endStr}</span>
       <span class="tl-v2-dur">${durStr}</span>
@@ -1210,7 +1223,7 @@ function renderRecordOnlyBlock(block, nowTime) {
         <button class="tl-action-btn" onclick="event.stopPropagation();editSessionById('${record.id}')">✏️</button>
         <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${record.id}')">🗑</button>
       </div>
-    </div>
+    </div>${nowLine}
   </div>`;
 }
 
