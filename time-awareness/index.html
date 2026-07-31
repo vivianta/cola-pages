@@ -537,6 +537,7 @@ let currentMode = 'plan';
 let editingSession = null;
 let showEditModal = false;
 let syncStatus = 'offline';
+let initialSyncDone = false;
 
 function saveDataAndSync() {
   saveLocal(data);
@@ -1258,6 +1259,26 @@ async function syncNow() {
 }
 
 function restoreActiveFromData() {
+  const now = new Date();
+
+  // Clear stale active record: if the session no longer exists or has ended
+  if (activeRecord) {
+    const session = data.sessions.find(s => s.id === activeRecord.id);
+    if (!session || session.end) {
+      stopRecordTimer(activeRecord.id);
+      activeRecord = null;
+      recordStartTime = null;
+    }
+  }
+
+  // Clear stale active plan
+  if (activePlan) {
+    const session = data.sessions.find(s => s.id === activePlan.id);
+    if (!session || new Date(session.end) <= now) {
+      activePlan = null;
+    }
+  }
+
   // Detect active record: today's record session with no end time
   if (!activeRecord) {
     const running = data.sessions.find(s => s.type === 'record' && !s.end && isToday(s.start));
@@ -1267,15 +1288,15 @@ function restoreActiveFromData() {
       startRecordTimer(running);
     }
   }
+
   // Detect active plan: today's plan session whose end is still in the future
   if (!activePlan) {
-    const now = new Date();
     const plans = data.sessions.filter(s => s.type === 'plan' && isToday(s.start) && new Date(s.end) > now);
-    // Take the latest one (most recent start)
     if (plans.length > 0) {
       activePlan = plans.reduce((a, b) => new Date(a.start) > new Date(b.start) ? a : b);
     }
   }
+
   persistState();
 }
 
@@ -1409,25 +1430,34 @@ async function init() {
       saveLocal(data);
       restoreActiveFromData();
       updateSyncStatus('synced');
+      // Only mark sync done if we successfully pulled & merged —
+      // otherwise our local data might be stale and we should NOT push it
+      initialSyncDone = true;
       renderAll();
     }else{
       updateSyncStatus('error');
+      // Cloud unreachable: keep initialSyncDone=false to prevent
+      // pushing potentially stale local data back to cloud
     }
+  } else {
+    // No sync configured — local-only mode, safe to push (nowhere)
+    initialSyncDone = true;
   }
 
   setInterval(()=>{if(activeRecord)updateRecordDisplay();cleanupExpiredPlans();},1000);
 }
 
 // Push on page close to avoid losing data between devices
+// Only push after initial sync is done to avoid overwriting cloud with stale local data
 window.addEventListener('beforeunload', () => {
-  if (getSyncUrl()) {
+  if (getSyncUrl() && initialSyncDone) {
     navigator.sendBeacon(getSyncUrl(), JSON.stringify(data));
   }
 });
 
 // Also attempt push when page becomes hidden (switching tabs, locking phone)
 window.addEventListener('visibilitychange', () => {
-  if (document.hidden && getSyncUrl()) {
+  if (document.hidden && getSyncUrl() && initialSyncDone) {
     navigator.sendBeacon(getSyncUrl(), JSON.stringify(data));
   }
 });
