@@ -160,6 +160,45 @@
     </div>
   </div>
 
+  <div style="margin:32px 0 16px; padding-top:16px; border-top:1px solid #e5e7eb;">
+    <h3 style="font-size:15px; margin-bottom:4px;">边界情况</h3>
+    <div class="subtitle">两种常见偏差如何处理</div>
+  </div>
+
+  <div class="timeline">
+    <div class="time-axis">
+      <div class="time-line"></div>
+    </div>
+
+    <!-- 边界1：晚开始 — 计划 16:00-17:00 工作，实际 16:15 才开始 -->
+    <div class="hour-row" style="margin-bottom:4px; font-size:11px; color:#9ca3af;">16:00</div>
+    <div class="track work" style="min-height:80px;">
+      <div class="plan-layer" style="min-height:72px; align-items:flex-start; padding-top:10px;">
+        <span class="icon">💼</span> 计划：工作/学习 ・ 16:00–17:00
+      </div>
+      <div class="actual-layer" style="top:18px; background:#4A90D9;">
+        <span class="icon">💼</span> 工作/学习<span class="time-range">16:15 – 17:05</span>
+      </div>
+    </div>
+    <div style="font-size:11px; color:#9ca3af; margin:-8px 0 16px 0; padding-left:4px;">
+      ⚠ 晚了 15 分钟开始 — 实际块在计划框内向下偏移，空白区域就是拖延的时间
+    </div>
+
+    <!-- 边界2：计划工作、实际在刷手机 — 分类冲突 -->
+    <div class="hour-row" style="margin-bottom:4px; font-size:11px; color:#9ca3af;">17:00</div>
+    <div class="track work" style="min-height:72px;">
+      <div class="plan-layer" style="min-height:62px; align-items:flex-start; padding-top:10px;">
+        <span class="icon">💼</span> 计划：工作/学习 ・ 17:00–18:00
+      </div>
+      <div class="actual-layer" style="background:#E0687A; top:4px; left:4px; right:4px;">
+        <span class="icon">📱</span> 消遣<span class="time-range">17:00 – 17:52</span>
+      </div>
+    </div>
+    <div style="font-size:11px; color:#E0687A; margin:-8px 0 16px 0; padding-left:4px;">
+      ⚠ 计划了工作却在刷手机 — 红色块压在蓝色框上，一眼看穿
+    </div>
+  </div>
+
   <div class="legend">
     <div class="legend-item"><div class="legend-box actual"></div> 实际记录（实心，分类颜色）</div>
     <div class="legend-item"><div class="legend-box plan"></div> 计划（虚线框，覆盖在下方）</div>
