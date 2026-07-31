@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- Pot -->
+  <path d="M12 38h24l-3 8H15l-3-8z" fill="#c4956a"/>
+  <rect x="9" y="36" width="30" height="3" rx="1.5" fill="#b8875e"/>
+  <!-- Stem -->
+  <line x1="24" y1="16" x2="24" y2="36" stroke="#4a7a2e" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Left leaf -->
+  <ellipse cx="17" cy="22" rx="7" ry="5" fill="#5a9a3a" transform="rotate(-25,17,22)"/>
+  <ellipse cx="17" cy="22" rx="7" ry="5" fill="none" stroke="#4a8a2e" stroke-width="0.8" transform="rotate(-25,17,22)"/>
+  <!-- Right leaf -->
+  <ellipse cx="31" cy="20" rx="7" ry="5" fill="#68aa44" transform="rotate(25,31,20)"/>
+  <ellipse cx="31" cy="20" rx="7" ry="5" fill="none" stroke="#5a9a34" stroke-width="0.8" transform="rotate(25,31,20)"/>
+  <!-- Top leaf -->
+  <ellipse cx="24" cy="15" rx="6" ry="4.5" fill="#7ab84e" transform="rotate(5,24,15)"/>
+  <ellipse cx="24" cy="15" rx="6" ry="4.5" fill="none" stroke="#6aaa40" stroke-width="0.8" transform="rotate(5,24,15)"/>
+  <!-- Flowers -->
+  <circle cx="19" cy="13" r="2.5" fill="#ff90b0"/>
+  <circle cx="29" cy="14" r="2" fill="#ffb0c8"/>
+  <circle cx="24" cy="10" r="2.2" fill="#ff98b4"/>
+</svg>

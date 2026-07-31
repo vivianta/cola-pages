@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- Pot -->
+  <path d="M12 38h24l-3 8H15l-3-8z" fill="#c4956a"/>
+  <rect x="9" y="36" width="30" height="3" rx="1.5" fill="#b8875e"/>
+  <!-- Stem - drooping right -->
+  <path d="M24 36 Q26 28 28 24 Q30 20 32 18" stroke="#6b4a2e" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Branch drooping left -->
+  <path d="M28 24 Q24 24 20 26" stroke="#6b4a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- Leaves - brown and sparse, drooping -->
+  <ellipse cx="32" cy="17" rx="4" ry="2.5" fill="#a08030" transform="rotate(40,32,17)" opacity="0.7"/>
+  <ellipse cx="20" cy="25" rx="3.5" ry="2" fill="#8b6914" transform="rotate(-30,20,25)" opacity="0.5"/>
+  <!-- Falling leaf -->
+  <ellipse cx="35" cy="10" rx="3.5" ry="2" fill="#a08030" transform="rotate(60,35,10)" opacity="0.4"/>
+</svg>

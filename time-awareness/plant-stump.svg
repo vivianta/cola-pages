@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- Pot -->
+  <path d="M12 38h24l-3 8H15l-3-8z" fill="#c4c0b8"/>
+  <rect x="9" y="36" width="30" height="3" rx="1.5" fill="#b0aca4"/>
+  <!-- Tiny stump -->
+  <rect x="22" y="32" width="4" height="5" rx="1.5" fill="#a09890"/>
+</svg>
