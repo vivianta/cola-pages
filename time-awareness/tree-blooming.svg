@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Ground shadow -->
+  <ellipse cx="60" cy="108" rx="35" ry="6" fill="#c4b8a8" opacity="0.5"/>
+  <!-- Trunk -->
+  <rect x="55" y="68" width="10" height="36" rx="3" fill="#6b4a2e"/>
+  <rect x="55" y="68" width="5" height="36" rx="2" fill="#5a3a1e"/>
+  <!-- Branches -->
+  <line x1="60" y1="68" x2="40" y2="52" stroke="#6b4a2e" stroke-width="4" stroke-linecap="round"/>
+  <line x1="60" y1="68" x2="80" y2="52" stroke="#6b4a2e" stroke-width="4" stroke-linecap="round"/>
+  <line x1="60" y1="72" x2="30" y2="58" stroke="#6b4a2e" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="72" x2="90" y2="58" stroke="#6b4a2e" stroke-width="3" stroke-linecap="round"/>
+  <!-- Canopy clusters - bottom layer -->
+  <ellipse cx="34" cy="54" rx="16" ry="14" fill="#4a8a30"/>
+  <ellipse cx="86" cy="54" rx="16" ry="14" fill="#4a8a30"/>
+  <ellipse cx="60" cy="54" rx="18" ry="14" fill="#5a9a38"/>
+  <!-- Canopy clusters - mid layer -->
+  <ellipse cx="40" cy="42" rx="18" ry="14" fill="#68aa44"/>
+  <ellipse cx="80" cy="42" rx="18" ry="14" fill="#68aa44"/>
+  <ellipse cx="60" cy="40" rx="20" ry="15" fill="#72b44a"/>
+  <!-- Canopy clusters - top layer -->
+  <ellipse cx="48" cy="30" rx="16" ry="12" fill="#7ab84e"/>
+  <ellipse cx="72" cy="30" rx="16" ry="12" fill="#7ab84e"/>
+  <ellipse cx="60" cy="24" rx="17" ry="12" fill="#82c052"/>
+  <!-- Highlights -->
+  <ellipse cx="52" cy="28" rx="8" ry="6" fill="#8cc654" opacity="0.6"/>
+  <ellipse cx="70" cy="26" rx="7" ry="5" fill="#8cc654" opacity="0.4"/>
+  <!-- Blossoms -->
+  <circle cx="38" cy="36" r="3" fill="#ffb8cc"/>
+  <circle cx="82" cy="38" r="3" fill="#ffc4d4"/>
+  <circle cx="55" cy="22" r="3.5" fill="#ffb0c4"/>
+  <circle cx="65" cy="20" r="2.5" fill="#ffc8d8"/>
+  <circle cx="44" cy="50" r="2.5" fill="#ffb4c8"/>
+  <circle cx="74" cy="48" r="2.5" fill="#ffc0d0"/>
+  <circle cx="60" cy="34" r="3" fill="#ffb8cc"/>
+  <!-- Falling petals -->
+  <ellipse cx="30" cy="74" rx="3" ry="2" fill="#ffb8cc" transform="rotate(30,30,74)" opacity="0.7"/>
+  <ellipse cx="92" cy="80" rx="2.5" ry="1.5" fill="#ffc4d4" transform="rotate(-20,92,80)" opacity="0.6"/>
+  <ellipse cx="48" cy="90" rx="2" ry="1.5" fill="#ffb0c4" transform="rotate(45,48,90)" opacity="0.5"/>
+</svg>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Ground shadow -->
+  <ellipse cx="60" cy="108" rx="30" ry="5" fill="#c4b8a8" opacity="0.5"/>
+  <!-- Stump -->
+  <rect x="52" y="76" width="16" height="28" rx="4" fill="#6b4a2e"/>
+  <rect x="52" y="76" width="8" height="28" rx="3" fill="#5a3a1e"/>
+  <!-- Cut top -->
+  <ellipse cx="60" cy="76" rx="8" ry="3" fill="#8b6914"/>
+  <!-- Growth rings -->
+  <ellipse cx="60" cy="76" rx="6" ry="2.2" fill="none" stroke="#7a5a14" stroke-width="0.8"/>
+  <ellipse cx="60" cy="76" rx="4" ry="1.4" fill="none" stroke="#7a5a14" stroke-width="0.7"/>
+  <ellipse cx="60" cy="76" rx="2" ry="0.7" fill="none" stroke="#7a5a14" stroke-width="0.6"/>
+  <!-- Small sprout from stump -->
+  <line x1="68" y1="76" x2="72" y2="60" stroke="#5a8a30" stroke-width="2" stroke-linecap="round"/>
+  <ellipse cx="73" cy="58" rx="5" ry="3" fill="#7ab84e" transform="rotate(20,73,58)"/>
+</svg>
