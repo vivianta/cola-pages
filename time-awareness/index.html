@@ -91,12 +91,22 @@ body {
 .cat-btn .cat-icon { font-size: 26px; display: block; margin-bottom: 4px; }
 .cat-btn .cat-name { font-size: 13px; font-weight: 600; color: var(--text); }
 .cat-btn.active { transform: scale(1.03); box-shadow: var(--shadow-md); }
-.cat-btn.work.active { border-color: var(--work); background: var(--work-bg); }
-.cat-btn.chores.active { border-color: var(--chores); background: var(--chores-bg); }
-.cat-btn.exercise.active { border-color: var(--exercise); background: var(--exercise-bg); }
-.cat-btn.recharge.active { border-color: var(--recharge); background: var(--recharge-bg); }
-.cat-btn.entertainment.active { border-color: var(--entertainment); background: var(--entertainment-bg); }
-.cat-btn.unrecorded.active { border-color: var(--unrecorded); background: var(--unrecorded-bg); }
+
+/* Plan mode: pale backgrounds matching plan blocks */
+.mode-plan .cat-btn.work          { background: #f5f8ff; border-color: #c8d4ec; color: #8a98b4; }
+.mode-plan .cat-btn.chores        { background: #f8f4ff; border-color: #d4c8e8; color: #a090b8; }
+.mode-plan .cat-btn.exercise      { background: #fff8f4; border-color: #e8d0b8; color: #c09878; }
+.mode-plan .cat-btn.recharge      { background: #f5faf5; border-color: #bcd0bc; color: #8aaa8a; }
+.mode-plan .cat-btn.entertainment { background: #fff4f4; border-color: #ecc8c8; color: #c08888; }
+.mode-plan .cat-btn.active        { font-weight: 700; }
+
+/* Record mode: deeper colors matching record blocks */
+.mode-record .cat-btn.work          { background: #d0e0ff; border-color: #3366cc; color: #1a3a6a; }
+.mode-record .cat-btn.chores        { background: #e0d0f4; border-color: #7733aa; color: #4a2a6a; }
+.mode-record .cat-btn.exercise      { background: #ffe0c8; border-color: #cc6622; color: #804020; }
+.mode-record .cat-btn.recharge      { background: #c8e8c8; border-color: #338833; color: #1a4a1a; }
+.mode-record .cat-btn.entertainment { background: #ffd0d0; border-color: #cc3333; color: #701818; }
+.mode-record .cat-btn.active        { font-weight: 700; border-width: 3px; }
 
 .cat-btn.entertainment.alerting {
   animation: alertPulse 0.8s ease-in-out infinite;
@@ -493,18 +503,6 @@ body {
   position: absolute; left: 50%; transform: translateX(-50%);
   font-size: 10px; color: #ef4444; font-weight: 700; z-index: 11;
 }
-
-.tl-gantt-legend {
-  margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 10px;
-  font-size: 10px; color: #9ca3af; justify-content: center;
-}
-.tl-gantt-legend span { display: flex; align-items: center; gap: 4px; }
-.tl-legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
-.tl-legend-dot.w { background: #4a7abf; }
-.tl-legend-dot.h { background: #8a5ac0; }
-.tl-legend-dot.e { background: #e88840; }
-.tl-legend-dot.c { background: #4a9a4a; }
-.tl-legend-dot.n { background: #d04848; }
 
 /* Remove old timeline styles we no longer need */
 .timeline-dual, .tl-dual-left, .tl-dual-right, .tl-dual-label, .tl-dual-empty { display: none; }
@@ -1281,7 +1279,7 @@ function renderApp() {
         <div class="status-main">选择分类开始 1 小时计划</div>
       </div>`;
     }
-    html+=`<div class="category-grid">`;
+    html+=`<div class="category-grid mode-plan">`;
     for(const[key,cat] of Object.entries(PLAN_CATEGORIES)){
       const isActive=activePlan&&activePlan.category===key;
       html+=`<button class="cat-btn ${key}${isActive?' active':''}" onclick="startPlan('${key}')">
@@ -1310,7 +1308,7 @@ function renderApp() {
         <div class="status-main">选择分类开始记录</div>
       </div>`;
     }
-    html+=`<div class="category-grid">`;
+    html+=`<div class="category-grid mode-record">`;
     for(const[key,cat] of Object.entries(RECORD_CATEGORIES)){
       const isActive=activeRecord&&activeRecord.category===key;
       let cls=`cat-btn ${key}${isActive?' active':''}`;
@@ -1523,15 +1521,6 @@ function renderApp() {
 
     html+=`</div>`; // tl-gantt-wrap
     html+=`</div>`; // tl-gantt-scroll
-
-    // Legend
-    html+=`<div class="tl-gantt-legend">
-      <span><span class="tl-legend-dot w"></span>工作/学习</span>
-      <span><span class="tl-legend-dot c"></span>充电</span>
-      <span><span class="tl-legend-dot h"></span>家务</span>
-      <span><span class="tl-legend-dot e"></span>锻炼</span>
-      <span><span class="tl-legend-dot n"></span>消遣</span>
-    </div>`;
 
     window._tlScrollTarget = scrollTop;
     window._tlScrollApplied = false;
