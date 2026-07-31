@@ -1295,7 +1295,7 @@ function renderApp() {
       html+=`<div class="${cls}" onclick="selectedDate='${col.date}';renderAll()">
         <img class="tree-icon" src="${iconBase}${col.tree}" alt="" onerror="this.style.display='none'">
         <div class="bar-col" style="height:${heightPct}px"></div>
-        <div class="day-name">${col.weekday}</div>
+        <div class="day-name">周${col.weekday}</div>
         <div class="day-dur">${col.dur>0?fmtDuration(col.dur):''}</div>
       </div>`;
     }
