@@ -816,6 +816,28 @@ async function syncNow() {
   showToast(ok ? '同步成功' : '同步失败，请检查网络');
 }
 
+function restoreActiveFromData() {
+  // Detect active record: today's record session with no end time
+  if (!activeRecord) {
+    const running = data.sessions.find(s => s.type === 'record' && !s.end && isToday(s.start));
+    if (running) {
+      activeRecord = running;
+      recordStartTime = new Date(running.start).getTime();
+      startRecordTimer(running);
+    }
+  }
+  // Detect active plan: today's plan session whose end is still in the future
+  if (!activePlan) {
+    const now = new Date();
+    const plans = data.sessions.filter(s => s.type === 'plan' && isToday(s.start) && new Date(s.end) > now);
+    // Take the latest one (most recent start)
+    if (plans.length > 0) {
+      activePlan = plans.reduce((a, b) => new Date(a.start) > new Date(b.start) ? a : b);
+    }
+  }
+  persistState();
+}
+
 async function pullAndMerge() {
   const cloudData = await pullFromCloud();
   if (!cloudData) { updateSyncStatus('error'); return; }
@@ -824,6 +846,7 @@ async function pullAndMerge() {
   const localOnly = data.sessions.filter(s=>!cloudIds.has(s.id));
   data.sessions = [...cloudData.sessions, ...localOnly];
   saveLocal(data);
+  restoreActiveFromData();
   updateSyncStatus('synced');
   renderAll();
 }
@@ -943,6 +966,7 @@ async function init() {
       const localOnly=data.sessions.filter(s=>!cloudIds.has(s.id));
       data.sessions=[...cloudData.sessions,...localOnly];
       saveLocal(data);
+      restoreActiveFromData();
       updateSyncStatus('synced');
       renderAll();
     }else{
