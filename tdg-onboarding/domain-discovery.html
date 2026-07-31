@@ -63,9 +63,18 @@
   .stat.proposed{background:#dbeafe;color:#1e40af}
   .stat.clarify{background:#fef9c3;color:#854d0e}
 
-  .export-bar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:16px}
+  .export-bar{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-bottom:16px}
   .export-bar button{padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:#374151}
   .export-bar button.primary{background:#4A90D9;color:#fff;border-color:#4A90D9}
+  .save-indicator{font-size:11px;color:#9ca3af;display:flex;align-items:center;gap:4px}
+  .save-indicator.saved{color:#16a34a}
+  .save-indicator.modified{color:#f59e0b}
+
+  .version-panel{background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:12px;display:none}
+  .version-panel h3{font-size:14px;margin-bottom:8px}
+  .version-panel .ver-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:12px}
+  .version-panel .ver-row .ver-time{color:#9ca3af}
+  .version-panel .ver-row .ver-author{font-weight:600;color:#4A90D9}
 
   .watermark{text-align:center;font-size:11px;color:#d1d5db;margin-top:24px;padding-bottom:20px}
 
@@ -82,8 +91,10 @@
 
   <!-- Export bar -->
   <div class="export-bar">
-    <button onclick="exportFeedback()">📥 导出反馈</button>
-    <button class="primary" onclick="resetAll()">🔄 重置标记</button>
+    <span class="save-indicator saved" id="save-indicator">💾 Saved</span>
+    <button onclick="importFeedback()">📥 导入反馈</button>
+    <button onclick="exportFeedback()">📤 导出反馈</button>
+    <button class="primary" onclick="resetAll()">🔄 重置</button>
   </div>
 
   <!-- Report header -->
@@ -317,9 +328,10 @@ function updateFieldStatus(i,v){
   const sel = document.getElementById('field-status-'+i);
   sel.className = 'status-select ' + v.toLowerCase().replace(/ /g,'');
   updateFieldStats();
+  autoSave();
 }
 
-function removeField(i){ data.fields.splice(i,1); renderFields(); }
+function removeField(i){ data.fields.splice(i,1); renderFields(); autoSave(); }
 function addField(){
   const name=document.getElementById('new-field-name').value.trim();
   const ex=document.getElementById('new-field-example').value.trim();
@@ -369,9 +381,10 @@ function updateConstraintStatus(i,v){
   const sel = document.getElementById('constraint-status-'+i);
   sel.className = 'status-select ' + v.toLowerCase().replace(/ /g,'');
   updateConstraintStats();
+  autoSave();
 }
 
-function removeConstraint(i){ data.constraints.splice(i,1); renderConstraints(); }
+function removeConstraint(i){ data.constraints.splice(i,1); renderConstraints(); autoSave(); }
 function addConstraint(){
   const id=document.getElementById('new-constraint-id').value.trim()||'DC-NEW';
   const a=document.getElementById('new-constraint-area').value.trim();
@@ -382,6 +395,7 @@ function addConstraint(){
   data.constraints.push({id,area:a||'—',constraint:t,type:ty||'—',source:s||'—',status:'Proposed'});
   ['new-constraint-id','new-constraint-area','new-constraint-text','new-constraint-type','new-constraint-source'].forEach(d=>document.getElementById(d).value='');
   renderConstraints();
+  autoSave();
 }
 
 function updateConstraintStats(){
@@ -402,6 +416,7 @@ function addComment(section, input){
   comments[section].push({author:'Reviewer',text,time:new Date().toLocaleTimeString()});
   input.value = '';
   renderComments(section);
+  autoSave();
 }
 
 function renderComments(section){
@@ -413,21 +428,97 @@ function renderComments(section){
   container.appendChild(inputRow);
 }
 
-// Export
+// ===== PERSISTENCE =====
+const STORAGE_KEY = 'tdg-domain-discovery-feedback';
+const AUTHOR_KEY = 'tdg-domain-discovery-author';
+let author = localStorage.getItem(AUTHOR_KEY) || 'Consultant';
+let saveTimeout;
+
+function autoSave(){
+  clearTimeout(saveTimeout);
+  document.getElementById('save-indicator').textContent = '⏳ Saving...';
+  document.getElementById('save-indicator').className = 'save-indicator modified';
+  saveTimeout = setTimeout(() => {
+    const state = {
+      fields: data.fields,
+      constraints: data.constraints,
+      comments,
+      author,
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    document.getElementById('save-indicator').textContent = '💾 Saved';
+    document.getElementById('save-indicator').className = 'save-indicator saved';
+  }, 500);
+}
+
+function loadSavedState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return;
+  try{
+    const state = JSON.parse(raw);
+    if(state.author) author = state.author;
+    if(state.fields) data.fields = state.fields;
+    if(state.constraints) data.constraints = state.constraints;
+    if(state.comments) Object.keys(comments).forEach(k => { comments[k] = state.comments[k] || []; });
+    if(state.savedAt) console.log('Restored feedback from', new Date(state.savedAt).toLocaleString());
+  }catch(e){ console.warn('Could not restore saved state:', e); }
+}
+
+// ===== EXPORT / IMPORT =====
 function exportFeedback(){
   const state = {
+    domain: 'Brreg RRH',
     summary: data.summary,
     relationshipMap: data.relationshipMap,
     uml: data.uml,
     fields: data.fields,
     constraints: data.constraints,
-    comments
+    comments,
+    metadata: {
+      author,
+      exportedAt: new Date().toISOString(),
+      version: localStorage.getItem(STORAGE_KEY+'-version') || 1
+    }
   };
+  const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
   const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'brreg-rrh-domain-discovery-feedback.json';
+  a.download = `brreg-rrh-feedback-${author}-${ts}.json`;
   a.click();
+  
+  // Bump version
+  const v = parseInt(localStorage.getItem(STORAGE_KEY+'-version')||'0') + 1;
+  localStorage.setItem(STORAGE_KEY+'-version', v);
+}
+
+function importFeedback(){
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try{
+        const state = JSON.parse(ev.target.result);
+        if(state.fields) data.fields = state.fields;
+        if(state.constraints) data.constraints = state.constraints;
+        if(state.comments) Object.keys(comments).forEach(k => { comments[k] = state.comments[k] || []; });
+        if(state.metadata && state.metadata.author) author = state.metadata.author;
+        localStorage.setItem(AUTHOR_KEY, author);
+        renderFields();
+        renderConstraints();
+        ['summary','relations','uml','fields','constraints'].forEach(s => renderComments(s));
+        autoSave();
+        alert(`Loaded feedback from ${state.metadata?.author || 'unknown'} (exported ${state.metadata?.exportedAt?.slice(0,10) || '?'})`);
+      }catch(ex){ alert('Invalid feedback file'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
 }
 
 function resetAll(){
@@ -438,13 +529,16 @@ function resetAll(){
   renderFields();
   renderConstraints();
   ['summary','relations','uml','fields','constraints'].forEach(s => renderComments(s));
+  autoSave();
 }
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // Init
+loadSavedState();
 renderFields();
 renderConstraints();
+['summary','relations','uml','fields','constraints'].forEach(s => renderComments(s));
 </script>
 </body>
 </html>
