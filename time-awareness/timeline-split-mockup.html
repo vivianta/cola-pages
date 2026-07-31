@@ -46,6 +46,19 @@
   .cat-btn.ent.active    { border-color:#cc3333; color:#cc3333; background:#ffe0e0; }
   .cat-btn.idle   { border-color:#dcdcdc; color:#b0b0b0; background:#fafafa; }
   .cat-btn.idle:hover { border-color:#c0c0c0; }
+  /* Record buttons: saturated */
+  .cat-btn.rec-work   { border-color:#4a7abf; color:#1a3a6a; background:#d0e0ff; }
+  .cat-btn.rec-work.active   { border-color:#1a3a6a; color:#fff; background:#3366cc; }
+  .cat-btn.rec-house  { border-color:#8855c0; color:#4a2a6a; background:#e0d0f4; }
+  .cat-btn.rec-house.active  { border-color:#4a2a6a; color:#fff; background:#7733aa; }
+  .cat-btn.rec-exer   { border-color:#e08840; color:#804020; background:#ffe0c8; }
+  .cat-btn.rec-exer.active   { border-color:#804020; color:#fff; background:#cc6622; }
+  .cat-btn.rec-charge { border-color:#4a9a4a; color:#1a4a1a; background:#c8e8c8; }
+  .cat-btn.rec-charge.active { border-color:#1a4a1a; color:#fff; background:#338833; }
+  .cat-btn.rec-ent    { border-color:#d04848; color:#701818; background:#ffd0d0; }
+  .cat-btn.rec-ent.active    { border-color:#701818; color:#fff; background:#cc3333; }
+  .cat-btn.rec-idle   { border-color:#b0b0b0; color:#707070; background:#f0f0f0; }
+  .cat-btn.rec-idle:hover { border-color:#999; }
   .cat-btn.record-stop { flex:0.8; background:#ffe8e8; border-color:#e8c0c0; color:#c04040; font-weight:600; }
   .cat-btn.record-stop .emoji { font-size:17px; }
 
@@ -170,12 +183,12 @@ function switchMode(mode) {
     btns[1].classList.add('active'); btns[0].classList.remove('active');
     topBlock.innerHTML = '<div class="status-row"><span class="icon">⏱️</span>正在记录</div><div class="record-timer">03:37:48</div><div class="record-cat"><span>💼</span> 工作/学习</div><div style="height:4px"></div><div class="progress-bar"><div class="fill" style="width:68%"></div></div><button class="end-btn">停止记录</button>';
     catRow.innerHTML = `
-      <button class="cat-btn work"><span class="emoji">💼</span>工作</button>
-      <button class="cat-btn house"><span class="emoji">🏠</span>家务</button>
-      <button class="cat-btn exer"><span class="emoji">🏃</span>锻炼</button>
-      <button class="cat-btn charge"><span class="emoji">🔋</span>充电</button>
-      <button class="cat-btn ent"><span class="emoji">📱</span>消遣</button>
-      <button class="cat-btn idle"><span class="emoji">🕊️</span>空闲</button>`;
+      <button class="cat-btn rec-work"><span class="emoji">💼</span>工作</button>
+      <button class="cat-btn rec-house"><span class="emoji">🏠</span>家务</button>
+      <button class="cat-btn rec-exer"><span class="emoji">🏃</span>锻炼</button>
+      <button class="cat-btn rec-charge"><span class="emoji">🔋</span>充电</button>
+      <button class="cat-btn rec-ent"><span class="emoji">📱</span>消遣</button>
+      <button class="cat-btn rec-idle"><span class="emoji">🕊️</span>空闲</button>`;
   }
 }
 
