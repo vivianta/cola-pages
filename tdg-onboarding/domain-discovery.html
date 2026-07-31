@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brreg RRH — Domain Discovery Report</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f6f8;color:#1a1a2e;padding:20px;line-height:1.6}
+  .container{max-width:900px;margin:0 auto}
+
+  .report-header{background:#fff;border-radius:12px;padding:24px 28px;margin-bottom:16px;border-left:4px solid #4A90D9;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .report-header h1{font-size:22px;color:#1a1a2e;margin-bottom:4px}
+  .report-header .meta{font-size:13px;color:#9ca3af}
+  .report-header .badge{display:inline-block;background:#e8f0fe;color:#4A90D9;font-size:11px;padding:2px 8px;border-radius:4px;margin-left:8px;font-weight:600}
+
+  section{background:#fff;border-radius:10px;padding:20px 24px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+  section h2{font-size:16px;color:#1a1a2e;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  section h2 .section-num{background:#4A90D9;color:#fff;width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+
+  .comment-thread{margin-top:12px;border-top:1px solid #f0f0f0;padding-top:10px}
+  .comment-thread .comment{display:flex;gap:8px;margin-bottom:8px;font-size:13px}
+  .comment-thread .comment .avatar{width:28px;height:28px;border-radius:50%;background:#e8f0fe;color:#4A90D9;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+  .comment-thread .comment .body{background:#f8f9fb;border-radius:8px;padding:8px 12px;flex:1}
+  .comment-thread .comment .body .author{font-weight:600;font-size:11px;color:#6b7280;margin-bottom:2px}
+  .comment-input{display:flex;gap:8px;margin-top:8px}
+  .comment-input input{flex:1;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:12px;outline:none}
+  .comment-input input:focus{border-color:#4A90D9}
+  .comment-input button{padding:8px 14px;background:#4A90D9;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+
+  .tree{font-family:'SF Mono',Monaco,monospace;font-size:13px;line-height:1.8;padding:12px 16px;background:#fafbfc;border-radius:8px;white-space:pre;overflow-x:auto;color:#374151}
+
+  .mermaid-box{background:#fafbfc;border-radius:8px;padding:16px;display:flex;justify-content:center}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{text-align:left;padding:10px 8px;border-bottom:2px solid #e5e7eb;font-weight:600;color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  tbody td{padding:10px 8px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+  tbody tr:hover{background:#f8f9fb}
+  tbody tr.row-accepted{background:#f6fdf6}
+  tbody tr.row-rejected{background:#fef6f6;text-decoration:line-through;color:#b0b0b0}
+  tbody tr.row-discussion{background:#fffdf0}
+
+  .status-select{font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;outline:none}
+  .status-select.accepted{background:#dcfce7;border-color:#86efac;color:#166534}
+  .status-select.rejected{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
+  .status-select.discussion{background:#fef9c3;border-color:#fde047;color:#854d0e}
+  .status-select.clarification{background:#fef9c3;border-color:#fde047;color:#854d0e}
+  .status-select.unreviewed{background:#fff;border-color:#e5e7eb;color:#9ca3af}
+
+  .row-actions{display:flex;gap:4px}
+  .icon-btn{width:26px;height:26px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:#6b7280}
+  .icon-btn:hover{background:#f3f4f6}
+
+  .add-row{margin-top:8px;display:flex;gap:8px}
+  .add-row input{padding:6px 10px;border:1px dashed #d1d5db;border-radius:6px;font-size:12px;outline:none;flex:1}
+  .add-row input:focus{border-color:#4A90D9}
+  .add-row button{padding:6px 14px;background:#fff;border:1px dashed #4A90D9;color:#4A90D9;border-radius:6px;cursor:pointer;font-size:12px}
+
+  .stats-bar{display:flex;gap:12px;margin-bottom:12px;font-size:12px}
+  .stats-bar .stat{padding:4px 10px;border-radius:6px;font-weight:600}
+  .stat.confirmed{background:#dcfce7;color:#166534}
+  .stat.proposed{background:#dbeafe;color:#1e40af}
+  .stat.clarify{background:#fef9c3;color:#854d0e}
+
+  .export-bar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:16px}
+  .export-bar button{padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:#374151}
+  .export-bar button.primary{background:#4A90D9;color:#fff;border-color:#4A90D9}
+
+  .watermark{text-align:center;font-size:11px;color:#d1d5db;margin-top:24px;padding-bottom:20px}
+
+  @media(max-width:640px){
+    .container{padding:0}
+    body{padding:10px}
+    section{padding:14px}
+    table{font-size:11px}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Export bar -->
+  <div class="export-bar">
+    <button onclick="exportFeedback()">📥 导出反馈</button>
+    <button class="primary" onclick="resetAll()">🔄 重置标记</button>
+  </div>
+
+  <!-- Report header -->
+  <div class="report-header">
+    <h1>Brreg RRH — Domain Discovery Report <span class="badge">Level 1 PoC</span></h1>
+    <div class="meta">Generated 2026-07-31 · Input: schema.json + 3 examples + field documentation · AI-assisted analysis for expert review</div>
+  </div>
+
+  <!-- Section 1: Domain Summary -->
+  <section id="sec-summary">
+    <h2><span class="section-num">1</span> Domain Summary</h2>
+    <p id="summary-text" style="font-size:14px;color:#374151"></p>
+    <div class="comment-thread" id="comments-summary">
+      <div class="comment-input">
+        <input type="text" placeholder="Add a comment..." onkeydown="if(event.key==='Enter')addComment('summary',this)">
+        <button onclick="addComment('summary',this.previousElementSibling)">发送</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Relationship Map -->
+  <section id="sec-relations">
+    <h2><span class="section-num">2</span> Domain Relationship Map</h2>
+    <div class="tree" id="tree-container"></div>
+    <div class="comment-thread" id="comments-relations">
+      <div class="comment-input">
+        <input type="text" placeholder="Add a comment..." onkeydown="if(event.key==='Enter')addComment('relations',this)">
+        <button onclick="addComment('relations',this.previousElementSibling)">发送</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Schema UML -->
+  <section id="sec-uml">
+    <h2><span class="section-num">3</span> Schema UML</h2>
+    <div class="mermaid-box"><pre class="mermaid" id="mermaid-diagram"></pre></div>
+    <div class="comment-thread" id="comments-uml">
+      <div class="comment-input">
+        <input type="text" placeholder="Add a comment..." onkeydown="if(event.key==='Enter')addComment('uml',this)">
+        <button onclick="addComment('uml',this.previousElementSibling)">发送</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Field List -->
+  <section id="sec-fields">
+    <h2><span class="section-num">4</span> Proposed Tester-Facing Input Field List</h2>
+    <div class="stats-bar" id="field-stats"></div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th style="width:30px"></th><th>Field</th><th>Example values</th><th>Why meaningful</th><th style="width:120px">Status</th></tr></thead>
+        <tbody id="field-tbody"></tbody>
+      </table>
+    </div>
+    <div class="add-row">
+      <input type="text" placeholder="Field name" id="new-field-name">
+      <input type="text" placeholder="Example values" id="new-field-example">
+      <input type="text" placeholder="Why meaningful" id="new-field-why">
+      <button onclick="addField()">➕ Add field</button>
+    </div>
+    <div class="comment-thread" id="comments-fields">
+      <div class="comment-input">
+        <input type="text" placeholder="Add a comment..." onkeydown="if(event.key==='Enter')addComment('fields',this)">
+        <button onclick="addComment('fields',this.previousElementSibling)">发送</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Constraints -->
+  <section id="sec-constraints">
+    <h2><span class="section-num">5</span> Proposed Constraints</h2>
+    <div class="stats-bar" id="constraint-stats"></div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th style="width:30px"></th><th>ID</th><th>Area</th><th>Constraint</th><th>Type</th><th>Source basis</th><th style="width:120px">Status</th></tr></thead>
+        <tbody id="constraint-tbody"></tbody>
+      </table>
+    </div>
+    <div class="add-row">
+      <input type="text" placeholder="ID" id="new-constraint-id" style="flex:0.5">
+      <input type="text" placeholder="Area" id="new-constraint-area" style="flex:0.5">
+      <input type="text" placeholder="Constraint" id="new-constraint-text">
+      <input type="text" placeholder="Type" id="new-constraint-type" style="flex:0.5">
+      <input type="text" placeholder="Source" id="new-constraint-source">
+      <button onclick="addConstraint()">➕ Add constraint</button>
+    </div>
+    <div class="comment-thread" id="comments-constraints">
+      <div class="comment-input">
+        <input type="text" placeholder="Add a comment..." onkeydown="if(event.key==='Enter')addComment('constraints',this)">
+        <button onclick="addComment('constraints',this.previousElementSibling)">发送</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="watermark">
+    Level 1 Domain Discovery Report · AI-assisted analysis for expert review · Not a completed TDG implementation
+  </div>
+</div>
+
+<script>
+// === DATA ===
+const data = {
+  summary: "This domain is about registering whether a reporting-liable business has real beneficial owners, who those persons are, and what ownership or control basis makes them beneficial owners. The form captures the business, the identification status, beneficial-owner persons, their positions, and special cases such as indirect ownership, foreign persons, foundations, regulated markets, and foreign registers.",
+  relationshipMap: "Reporting business\n ├── declares one RRH identification status\n │    ├── has real beneficial owners\n │    │    ├── must have 1..* real beneficial owners\n │    │    └── must say whether there are additional unidentified owners\n │    ├── has real beneficial owners, but none can be identified\n │    └── has no real beneficial owners\n │         └── may require reason fields\n │\n ├── may have special organisation-form path\n │    ├── ASA / SE / SPA → regulated market information\n │    ├── NUF → foreign RRH register information\n │    └── STI → foundation role-holder and foundation-position information\n │\n └── has 0..* real beneficial owner persons\n      ├── each person is either Folkeregister-registered or foreign\n      ├── each person has one or more allowed position flags\n      ├── ownership/voting positions have size interval and basis\n      ├── indirect basis may require 1..* intermediate companies\n      └── some positions cannot be combined with others",
+  uml: `classDiagram
+    class Virksomhet {
+      +organisasjonsnummer
+      +organisasjonsform
+      +reelleRettighetshavereIdentifikasjon
+    }
+    class ReellRettighetshaver {
+      +erRegistrertIFolkeregisteret
+      +kanIkkeIdentifisereFlere
+    }
+    class FolkeregistrertPerson {
+      +foedselsEllerDNummer
+    }
+    class UtenlandskPerson {
+      +foedselsdato
+      +fulltNavn
+      +bostedsland
+      +statsborgerskap
+    }
+    class Posisjon {
+      +stoerrelsesintervall
+      +grunnlag
+    }
+    class MellomliggendeVirksomhet {
+      +erUtenlandskVirksomhet
+      +organisasjonsnummer
+    }
+    Virksomhet "1" --> "0..*" ReellRettighetshaver
+    ReellRettighetshaver --> FolkeregistrertPerson : if registered
+    ReellRettighetshaver --> UtenlandskPerson : if foreign
+    ReellRettighetshaver "1" --> "0..*" Posisjon
+    Posisjon --> MellomliggendeVirksomhet : if indirect`,
+
+  fields: [
+    {id:"F-001",field:"organisation_form",example:"AS, ASA, NUF, STI",why:"Drives which business rules and special paths are relevant.",status:"confirmed"},
+    {id:"F-002",field:"rrh_identification_status",example:"has_rrh, has_rrh_but_none_identifiable, has_no_rrh",why:"Main scenario branch of the form.",status:"confirmed"},
+    {id:"F-003",field:"number_of_beneficial_owners",example:"0, 1, 2, many",why:"Controls whether the payload has no owners, one owner, or multiple owners.",status:"confirmed"},
+    {id:"F-004",field:"has_additional_unidentified_owners",example:"true/false",why:"Covers the case where some owners are known but not all can be identified.",status:"confirmed"},
+    {id:"F-005",field:"no_rrh_reason_public_control",example:"true/false",why:"Relevant when the business declares it has no real beneficial owners.",status:"confirmed"},
+    {id:"F-006",field:"owner_identity_type",example:"folkeregister_person, foreign_person",why:"Determines whether the owner is identified by Norwegian ID or foreign-person data.",status:"confirmed"},
+    {id:"F-007",field:"owner_position_types",example:"ownership, voting_rights, board_appointment_right, other_control",why:"Core reason why the person is a real beneficial owner.",status:"confirmed"},
+    {id:"F-008",field:"ownership_size_interval",example:"25.01–49.99%, 50–74.99%, 75–100%",why:"Meaningful for ownership and voting-right control scenarios.",status:"confirmed"},
+    {id:"F-009",field:"position_basis",example:"direct, indirect, agreement",why:"Describes how the owner holds the position.",status:"confirmed"},
+    {id:"F-010",field:"has_intermediate_company",example:"true/false",why:"Needed for indirect ownership/control.",status:"confirmed"},
+    {id:"F-011",field:"intermediate_company_type",example:"norwegian_company, foreign_company",why:"Drives different intermediate-company data requirements.",status:"confirmed"},
+    {id:"F-012",field:"foreign_owner_country",example:"SWE, USA",why:"Relevant for foreign beneficial-owner scenarios.",status:"confirmed"},
+    {id:"F-013",field:"foreign_owner_citizenships",example:"SWE, SWE,USA",why:"Covers single/multiple citizenship variation.",status:"confirmed"},
+    {id:"F-014",field:"other_control_description_type",example:"guardian, agreement, custom text",why:"Needed when position is 'control in another way'.",status:"confirmed"},
+    {id:"F-015",field:"is_registered_on_regulated_market",example:"true/false",why:"Relevant for ASA, SE, SPA-type scenarios.",status:"confirmed"},
+    {id:"F-016",field:"regulated_market_type",example:"Euronext Oslo / Euronext Expand Oslo",why:"Required if regulated-market path is selected.",status:"confirmed"},
+    {id:"F-017",field:"is_registered_in_foreign_rrh_register",example:"true/false",why:"Relevant for NUF.",status:"confirmed"},
+    {id:"F-018",field:"foreign_register_type",example:"country/register code",why:"Required if foreign-register path is selected.",status:"confirmed"},
+    {id:"F-019",field:"include_foundation_roleholders",example:"true/false",why:"Relevant for foundation (STI) scenarios.",status:"confirmed"},
+    {id:"F-020",field:"foundation_position_type",example:"capital_contributor, board_appointment_majority, beneficiary",why:"Covers foundation-specific beneficial-owner positions.",status:"confirmed"}
+  ],
+
+  constraints: [
+    {id:"DC-001",area:"Reporting business",constraint:"A payload concerns one registreringspliktigVirksomhet, identified by organisation number.",type:"Entity / identity",source:"Schema has registreringspliktigVirksomhet.organisasjonsnummer",status:"Confirmed"},
+    {id:"DC-002",area:"Main declaration",constraint:"The business must declare one RRH identification status: has real beneficial owners, has none identifiable, or has none.",type:"Business branch / enum",source:"Field description lists the three values",status:"Confirmed"},
+    {id:"DC-003",area:"Has RRH",constraint:"If the business declares harReelleRettighetshavere, at least one reellRettighetshaver should be present.",type:"Conditional requiredness",source:"Examples with this declaration contain owners",status:"Confirmed"},
+    {id:"DC-004",area:"Has no RRH",constraint:"If the business declares harIkkeReelleRettighetshavere, the beneficial-owner list should be empty or absent.",type:"Conditional exclusion",source:"example5.json uses empty reellRettighetshaver array",status:"Proposed"},
+    {id:"DC-005",area:"Has no RRH",constraint:"If the business has no real beneficial owners, reason information may be required.",type:"Conditional requiredness",source:"Field description defines aarsakTilAt...; example5 includes reason object",status:"Needs clarification"},
+    {id:"DC-006",area:"Cannot identify RRH",constraint:"If the business has RRH but none can be identified, the expected payload structure is not shown in the examples.",type:"Missing branch",source:"No example covers this status value",status:"Needs clarification"},
+    {id:"DC-007",area:"Known + unknown RRH",constraint:"If known beneficial owners exist but not all identified, kanIkkeIdentifisereFlereReelleRettighetshavere should express this.",type:"Conditional flag",source:"Field description defines this field",status:"Confirmed"},
+    {id:"DC-008",area:"Beneficial owner",constraint:"Each reellRettighetshaver represents a physical person, not a company.",type:"Entity rule",source:"Field description: physical person who ultimately owns or controls",status:"Confirmed"},
+    {id:"DC-009",area:"Person identity",constraint:"A beneficial owner is either registered in Folkeregisteret or treated as a foreign person.",type:"Alternative structure",source:"Schema has erRegistrertIFolkeregisteret and both person types",status:"Confirmed"},
+    {id:"DC-010",area:"Folkeregister person",constraint:"If registered in Folkeregisteret, foedselsEllerDNummer is required.",type:"Conditional requiredness",source:"Schema requires foedselsEllerDNummer inside folkeregistrertPerson",status:"Confirmed"},
+    {id:"DC-011",area:"Foreign person",constraint:"If not registered in Folkeregisteret, foreign-person info is required: birth date, full name, residence country, citizenship.",type:"Conditional requiredness",source:"Schema requires foedselsdato, fulltNavn, bostedsland, statsborgerskap",status:"Confirmed"},
+    {id:"DC-012",area:"Beneficial-owner position",constraint:"A beneficial owner should have at least one ownership/control position.",type:"Business consistency",source:"Weak inference from definition; not enforced by schema",status:"Proposed"},
+    {id:"DC-013",area:"Ownership position",constraint:"If harPosisjonEierskap = true, posisjonEierskap must be present.",type:"Conditional requiredness",source:"Field description; examples show this pattern",status:"Confirmed"},
+    {id:"DC-014",area:"Voting-right control",constraint:"If harPosisjonKontrollOverStemmerettigheter = true, posisjonKontrollOverStemmerettigheter must be present.",type:"Conditional requiredness",source:"Field description; example4 shows this",status:"Confirmed"},
+    {id:"DC-015",area:"Position size",constraint:"Ownership and voting-right-control positions require a size interval.",type:"Required field / code value",source:"Field description: stoerrelsesintervall gives percentage interval",status:"Confirmed"},
+    {id:"DC-016",area:"Position basis",constraint:"Ownership and voting-right-control positions require basis information.",type:"Required field / code value",source:"Field description: grunnlag gives basis for the position",status:"Confirmed"},
+    {id:"DC-017",area:"Indirect position",constraint:"If basis includes grunnlagstype.indirekte, one or more intermediate companies should be provided.",type:"Conditional requiredness",source:"Field description; examples with indirect basis include intermediate companies",status:"Confirmed"},
+    {id:"DC-018",area:"Intermediate company",constraint:"Each intermediate company must be either Norwegian or foreign.",type:"Alternative structure",source:"Schema distinguishes norskVirksomhet and utenlandskVirksomhet",status:"Confirmed"},
+    {id:"DC-019",area:"Norwegian intermediate company",constraint:"If Norwegian, organisation number is required.",type:"Conditional requiredness",source:"Schema: norskVirksomhet.organisasjonsnummer",status:"Confirmed"},
+    {id:"DC-020",area:"Foreign intermediate company",constraint:"If foreign, name and address information are required.",type:"Conditional requiredness",source:"Schema: utenlandskVirksomhet with navn and adresse",status:"Confirmed"},
+    {id:"DC-021",area:"Board appointment position",constraint:"If right to appoint/remove board members, basis should be grunnlagstype.enighetEllerAvtale.",type:"Conditional value",source:"Field description; example4 shows this",status:"Confirmed"},
+    {id:"DC-022",area:"Control in another way",constraint:"If harPosisjonKontrollPaaAnnenMaate = true, a free-text description must be provided.",type:"Conditional requiredness",source:"Field description; example4 provides description",status:"Confirmed"},
+    {id:"DC-023",area:"Position combinations",constraint:"Ownership/voting-right may be combined; board appointment and 'other control' cannot combine with other positions.",type:"Combination rule",source:"Field description states combinations",status:"Confirmed"},
+    {id:"DC-024",area:"Foundation positions",constraint:"Foundation-specific positions should only apply to foundation flow, especially STI.",type:"Organisation-form constraint",source:"Field description marks positions relevant only for STI",status:"Confirmed"},
+    {id:"DC-025",area:"Foundation role holders",constraint:"For foundations, role holders may be relevant and may be fetched from Enhetsregisteret.",type:"Organisation-form / prefill",source:"Field description: rolleinnehaver list from Enhetsregisteret",status:"Needs clarification"},
+    {id:"DC-026",area:"Regulated market",constraint:"If business is registered on regulated market, market type must be provided.",type:"Conditional requiredness",source:"Schema: regulertMarked.markedstype; code list reference",status:"Confirmed"},
+    {id:"DC-027",area:"Regulated-market forms",constraint:"Regulated-market flow relevant only for ASA, SE, SPA.",type:"Organisation-form constraint",source:"Field description states relevant forms",status:"Confirmed"},
+    {id:"DC-028",area:"Foreign RRH register",constraint:"If Norwegian branch of foreign enterprise (NUF) registered in foreign RRH register, register type must be provided.",type:"Conditional requiredness",source:"Schema: utenlandskRegister.registertype; field description",status:"Confirmed"},
+    {id:"DC-029",area:"Foreign-register form",constraint:"Foreign-register flow should only apply to NUF.",type:"Organisation-form constraint",source:"Field description: NUF",status:"Confirmed"},
+    {id:"DC-030",area:"Code values",constraint:"Code values must come from code lists for identification status, size interval, basis type, market type, register type, organisation form.",type:"Code-list constraint",source:"Field description references named code lists",status:"Confirmed"}
+  ]
+};
+
+// === RENDER ===
+document.getElementById('summary-text').textContent = data.summary;
+document.getElementById('tree-container').textContent = data.relationshipMap;
+document.getElementById('mermaid-diagram').textContent = data.uml;
+
+mermaid.initialize({startOnLoad:true,theme:'neutral',securityLevel:'loose'});
+
+// Field table
+function renderFields(){
+  const tbody = document.getElementById('field-tbody');
+  tbody.innerHTML = data.fields.map((f,i) => `
+    <tr class="${rowClass(f.status)}" id="field-row-${i}">
+      <td><span style="font-size:10px;color:#9ca3af">${f.id}</span></td>
+      <td><strong>${esc(f.field)}</strong></td>
+      <td style="font-family:monospace;font-size:12px">${esc(f.example)}</td>
+      <td style="color:#6b7280">${esc(f.why)}</td>
+      <td>
+        <select class="status-select ${f.status.toLowerCase().replace(/ /g,'')}" onchange="updateFieldStatus(${i},this.value)" id="field-status-${i}">
+          ${statusOptions(f.status)}
+        </select>
+        <button class="icon-btn" onclick="removeField(${i})" title="Remove">✕</button>
+      </td>
+    </tr>`).join('');
+  updateFieldStats();
+}
+
+function statusOptions(current){
+  const opts = ['Confirmed','Proposed','Needs clarification','Rejected'];
+  return opts.map(o => `<option value="${o}" ${o===current?'selected':''}>${o}</option>`).join('');
+}
+
+function rowClass(s){ return s==='Confirmed'?'row-accepted':s==='Rejected'?'row-rejected':s==='Needs clarification'?'row-discussion':''; }
+
+function updateFieldStatus(i,v){
+  data.fields[i].status = v;
+  document.getElementById('field-row-'+i).className = rowClass(v);
+  const sel = document.getElementById('field-status-'+i);
+  sel.className = 'status-select ' + v.toLowerCase().replace(/ /g,'');
+  updateFieldStats();
+}
+
+function removeField(i){ data.fields.splice(i,1); renderFields(); }
+function addField(){
+  const name=document.getElementById('new-field-name').value.trim();
+  const ex=document.getElementById('new-field-example').value.trim();
+  const why=document.getElementById('new-field-why').value.trim();
+  if(!name)return;
+  data.fields.push({id:'F-NEW',field:name,example:ex,why:why||'—',status:'Proposed'});
+  document.getElementById('new-field-name').value='';
+  document.getElementById('new-field-example').value='';
+  document.getElementById('new-field-why').value='';
+  renderFields();
+}
+
+function updateFieldStats(){
+  const s=data.fields.reduce((a,f)=>{a[f.status]=(a[f.status]||0)+1;return a;},{});
+  document.getElementById('field-stats').innerHTML =
+    `<span class="stat confirmed">✓ ${s.Confirmed||0} confirmed</span>
+     <span class="stat proposed">→ ${s.Proposed||0} proposed</span>
+     <span class="stat clarify">? ${s['Needs clarification']||0} needs clarification</span>
+     ${s.Rejected?`<span style="color:#991b1b;font-size:12px;padding:4px 10px">✕ ${s.Rejected} rejected</span>`:''}
+     <span style="color:#9ca3af;margin-left:auto">${data.fields.length} total</span>`;
+}
+
+// Constraint table
+function renderConstraints(){
+  const tbody = document.getElementById('constraint-tbody');
+  tbody.innerHTML = data.constraints.map((c,i) => `
+    <tr class="${rowClass(c.status)}" id="constraint-row-${i}">
+      <td><span style="font-size:10px;color:#9ca3af">${c.id}</span></td>
+      <td style="font-weight:600">${esc(c.id)}</td>
+      <td>${esc(c.area)}</td>
+      <td style="max-width:260px">${esc(c.constraint)}</td>
+      <td style="font-size:11px;color:#6b7280">${esc(c.type)}</td>
+      <td style="font-size:11px;color:#9ca3af;max-width:180px">${esc(c.source)}</td>
+      <td>
+        <select class="status-select ${c.status.toLowerCase().replace(/ /g,'')}" onchange="updateConstraintStatus(${i},this.value)" id="constraint-status-${i}">
+          ${statusOptions(c.status)}
+        </select>
+        <button class="icon-btn" onclick="removeConstraint(${i})" title="Remove">✕</button>
+      </td>
+    </tr>`).join('');
+  updateConstraintStats();
+}
+
+function updateConstraintStatus(i,v){
+  data.constraints[i].status = v;
+  document.getElementById('constraint-row-'+i).className = rowClass(v);
+  const sel = document.getElementById('constraint-status-'+i);
+  sel.className = 'status-select ' + v.toLowerCase().replace(/ /g,'');
+  updateConstraintStats();
+}
+
+function removeConstraint(i){ data.constraints.splice(i,1); renderConstraints(); }
+function addConstraint(){
+  const id=document.getElementById('new-constraint-id').value.trim()||'DC-NEW';
+  const a=document.getElementById('new-constraint-area').value.trim();
+  const t=document.getElementById('new-constraint-text').value.trim();
+  const ty=document.getElementById('new-constraint-type').value.trim();
+  const s=document.getElementById('new-constraint-source').value.trim();
+  if(!t)return;
+  data.constraints.push({id,area:a||'—',constraint:t,type:ty||'—',source:s||'—',status:'Proposed'});
+  ['new-constraint-id','new-constraint-area','new-constraint-text','new-constraint-type','new-constraint-source'].forEach(d=>document.getElementById(d).value='');
+  renderConstraints();
+}
+
+function updateConstraintStats(){
+  const s=data.constraints.reduce((a,c)=>{a[c.status]=(a[c.status]||0)+1;return a;},{});
+  document.getElementById('constraint-stats').innerHTML =
+    `<span class="stat confirmed">✓ ${s.Confirmed||0} confirmed</span>
+     <span class="stat proposed">→ ${s.Proposed||0} proposed</span>
+     <span class="stat clarify">? ${s['Needs clarification']||0} needs clarification</span>
+     ${s.Rejected?`<span style="color:#991b1b;font-size:12px;padding:4px 10px">✕ ${s.Rejected} rejected</span>`:''}
+     <span style="color:#9ca3af;margin-left:auto">${data.constraints.length} total</span>`;
+}
+
+// Comments
+const comments = {summary:[],relations:[],uml:[],fields:[],constraints:[]};
+function addComment(section, input){
+  const text = input.value.trim();
+  if(!text) return;
+  comments[section].push({author:'Reviewer',text,time:new Date().toLocaleTimeString()});
+  input.value = '';
+  renderComments(section);
+}
+
+function renderComments(section){
+  const container = document.getElementById('comments-'+section);
+  const inputRow = container.querySelector('.comment-input');
+  container.innerHTML = comments[section].map(c =>
+    `<div class="comment"><div class="avatar">R</div><div class="body"><div class="author">${c.author} · ${c.time}</div>${esc(c.text)}</div></div>`
+  ).join('');
+  container.appendChild(inputRow);
+}
+
+// Export
+function exportFeedback(){
+  const state = {
+    summary: data.summary,
+    relationshipMap: data.relationshipMap,
+    uml: data.uml,
+    fields: data.fields,
+    constraints: data.constraints,
+    comments
+  };
+  const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'brreg-rrh-domain-discovery-feedback.json';
+  a.click();
+}
+
+function resetAll(){
+  if(!confirm('Reset all markings and comments?')) return;
+  data.fields.forEach(f => f.status='Confirmed');
+  data.constraints.forEach(c => c.status=c.status==='Confirmed'||c.status==='Proposed'?'Confirmed':c.status==='Needs clarification'?'Needs clarification':'Confirmed');
+  Object.keys(comments).forEach(k => comments[k]=[]);
+  renderFields();
+  renderConstraints();
+  ['summary','relations','uml','fields','constraints'].forEach(s => renderComments(s));
+}
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Init
+renderFields();
+renderConstraints();
+</script>
+</body>
+</html>
