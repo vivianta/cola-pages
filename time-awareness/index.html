@@ -242,6 +242,142 @@ body {
   .cat-btn .cat-icon { font-size: 22px; }
   .cat-btn .cat-name { font-size: 12px; }
 }
+
+/* ===== Timeline V2 — Vertical Overlay ===== */
+.timeline-v2 { position: relative; }
+
+.tl-v2-hour {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--text-muted);
+  padding: 8px 0 4px 0; margin-bottom: 2px;
+}
+.tl-v2-hour::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border); flex-shrink: 0;
+}
+.tl-v2-hour::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+.tl-v2-track {
+  position: relative; border-radius: 12px;
+  margin-bottom: 8px; overflow: visible;
+}
+
+/* Plan layer (background) */
+.tl-v2-plan {
+  border-radius: 12px; padding: 10px 14px; min-height: 46px;
+  border: 2px dashed; display: flex; align-items: center;
+  gap: 6px; font-size: 13px; flex-wrap: wrap;
+}
+.tl-v2-plan .tl-v2-time { font-size: 11px; opacity: 0.7; }
+.tl-v2-plan .tl-v2-dur { color: inherit; opacity: 0.6; font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+/* Actual layer (foreground, overlaid) */
+.tl-v2-actual {
+  border-radius: 10px; padding: 10px 14px; min-height: 38px;
+  color: #fff; display: flex; align-items: center;
+  gap: 6px; font-size: 13px; flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.tl-v2-actual .tl-v2-time { font-size: 11px; opacity: 0.85; }
+.tl-v2-actual .tl-v2-dur { font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+/* No-edit label */
+.tl-v2-noedit {
+  font-size: 11px; color: var(--text-muted); opacity: 0.5;
+  white-space: nowrap;
+}
+
+/* Action buttons (hover reveal) */
+.tl-v2-actions {
+  display: flex; gap: 2px; opacity: 0;
+  transition: opacity 0.15s; flex-shrink: 0;
+}
+.tl-v2-track:hover .tl-v2-actions,
+.tl-v2-track:focus-within .tl-v2-actions { opacity: 1; }
+
+/* ===== Block type variants ===== */
+
+/* Overlap: plan behind, actual overlaid on top */
+.tl-v2-track.overlap { position: relative; }
+.tl-v2-track.overlap .tl-v2-plan { padding-bottom: 14px; }
+.tl-v2-track.overlap .tl-v2-actual {
+  position: absolute; left: 4px; right: 4px;
+}
+
+/* Plan-only: muted empty-plan style */
+.tl-v2-track.plan-only .tl-v2-plan {
+  border-style: dashed; border-color: var(--border);
+  background: #f9fafb; color: var(--text-muted);
+}
+.tl-v2-track.plan-only .tl-v2-actual { display: none; }
+
+/* Record-only: standalone solid block */
+.tl-v2-track.record-only .tl-v2-plan { display: none; }
+.tl-v2-track.record-only .tl-v2-actual {
+  position: static; border-radius: 12px;
+}
+
+/* ===== Category color mapping ===== */
+.tl-v2-track.work .tl-v2-plan { border-color: #c4d4f0; background: var(--work-bg); }
+.tl-v2-track.work .tl-v2-actual { background: var(--work); }
+
+.tl-v2-track.chores .tl-v2-plan { border-color: #b8dcc8; background: var(--chores-bg); }
+.tl-v2-track.chores .tl-v2-actual { background: var(--chores); }
+
+.tl-v2-track.exercise .tl-v2-plan { border-color: #f0d4a8; background: var(--exercise-bg); }
+.tl-v2-track.exercise .tl-v2-actual { background: var(--exercise); }
+
+.tl-v2-track.recharge .tl-v2-plan { border-color: #d0c8f0; background: var(--recharge-bg); }
+.tl-v2-track.recharge .tl-v2-actual { background: var(--recharge); }
+
+.tl-v2-track.entertainment .tl-v2-plan { border-color: #f5c4ce; background: var(--entertainment-bg); }
+.tl-v2-track.entertainment .tl-v2-actual { background: var(--entertainment); }
+
+.tl-v2-track.unrecorded .tl-v2-actual { background: var(--unrecorded); }
+
+/* ===== Gap / idle indicator ===== */
+.tl-v2-gap {
+  margin-bottom: 8px; padding: 6px 14px; border-radius: 8px;
+  background: #fafafa; border: 1px dashed var(--border);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--text-muted);
+}
+.tl-v2-gap-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border); flex-shrink: 0;
+}
+
+/* ===== NOW line ===== */
+.tl-v2-now { position: relative; margin: 10px 0; }
+.tl-v2-now-line {
+  height: 2px; background: #ef4444; border-radius: 1px;
+  position: relative;
+}
+.tl-v2-now-label {
+  position: absolute; top: -8px; left: -44px;
+  font-size: 10px; font-weight: 700; color: #ef4444;
+  background: var(--bg); padding: 0 4px;
+}
+.tl-v2-now-line::after {
+  content: ''; position: absolute; left: -4px; top: -3px;
+  width: 8px; height: 8px; border-radius: 50%; background: #ef4444;
+}
+
+/* Ongoing pulse */
+.tl-v2-track.ongoing .tl-v2-actual {
+  animation: ongoingPulse 2s ease-in-out infinite;
+}
+@keyframes ongoingPulse {
+  0%, 100% { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  50% { box-shadow: 0 2px 18px rgba(0,0,0,0.28); }
+}
+
+@media (max-width: 400px) {
+  .tl-v2-plan, .tl-v2-actual { font-size: 12px; padding: 8px 10px; }
+  .tl-v2-dur { font-size: 11px; }
+}
 </style>
 </head>
 <body>
@@ -510,6 +646,10 @@ function editSession(session) {
   showEditModal = true;
   renderModal();
 }
+function editSessionById(id) {
+  const s = data.sessions.find(x => x.id === id);
+  if (s) editSession(s);
+}
 function updateSession(id, updates) {
   const s = data.sessions.find(x=>x.id===id);
   if(!s) return;
@@ -549,6 +689,162 @@ function getActivePlanRemaining() {
   return Math.max(0,Math.floor((new Date(activePlan.end)-Date.now())/60000));
 }
 
+// ========== TIMELINE V2 BLOCK CONSTRUCTION ==========
+function buildTimelineBlocks() {
+  const sessions = getTodaySessions();
+  const plans = sessions.filter(s => s.type === 'plan');
+  const records = sessions.filter(s => s.type === 'record');
+  const pairedRecordIds = new Set();
+  const blocks = [];
+
+  for (const plan of plans) {
+    const planStart = new Date(plan.start);
+    const planEnd = new Date(plan.end);
+    let bestRecord = null;
+    let bestOverlap = 0;
+
+    for (const record of records) {
+      if (pairedRecordIds.has(record.id)) continue;
+      const recStart = new Date(record.start);
+      const recEnd = record.end ? new Date(record.end) : new Date();
+      const overlapStart = Math.max(planStart, recStart);
+      const overlapEnd = Math.min(planEnd, recEnd);
+      const overlap = (overlapEnd - overlapStart) / 60000;
+      if (overlap > bestOverlap) {
+        bestOverlap = overlap;
+        bestRecord = record;
+      }
+    }
+
+    if (bestRecord && bestOverlap > 0) {
+      pairedRecordIds.add(bestRecord.id);
+      blocks.push({ type: 'overlap', plan, record: bestRecord });
+    } else {
+      blocks.push({ type: 'plan-only', plan });
+    }
+  }
+
+  for (const record of records) {
+    if (!pairedRecordIds.has(record.id)) {
+      blocks.push({ type: 'record-only', record });
+    }
+  }
+
+  blocks.sort((a, b) => getBlockStartTime(a) - getBlockStartTime(b));
+  return blocks;
+}
+
+function getBlockStartTime(block) {
+  if (block.type === 'plan-only') return new Date(block.plan.start);
+  if (block.type === 'record-only') return new Date(block.record.start);
+  return new Date(Math.min(new Date(block.plan.start), new Date(block.record.start)));
+}
+
+function getBlockEndTime(block) {
+  if (block.type === 'plan-only') return new Date(block.plan.end);
+  if (block.type === 'record-only') {
+    return block.record.end ? new Date(block.record.end) : new Date();
+  }
+  const planEnd = new Date(block.plan.end);
+  const recEnd = block.record.end ? new Date(block.record.end) : new Date();
+  return new Date(Math.max(planEnd, recEnd));
+}
+
+// ========== TIMELINE V2 RENDER HELPERS ==========
+function renderTimelineBlock(block, nowTime) {
+  if (block.type === 'overlap') return renderOverlapBlock(block, nowTime);
+  if (block.type === 'plan-only') return renderPlanOnlyBlock(block);
+  if (block.type === 'record-only') return renderRecordOnlyBlock(block, nowTime);
+  return '';
+}
+
+function renderOverlapBlock(block, nowTime) {
+  const plan = block.plan, record = block.record;
+  const planCat = PLAN_CATEGORIES[plan.category];
+  const recCat = RECORD_CATEGORIES[record.category];
+  const planStart = new Date(plan.start), planEnd = new Date(plan.end);
+  const recStart = new Date(record.start);
+  const recEnd = record.end ? new Date(record.end) : new Date();
+  const isActive = !record.end;
+
+  const planDurMin = Math.max(1, (planEnd - planStart) / 60000);
+  const recDurMin = Math.max(1, (recEnd - recStart) / 60000);
+  const offsetMin = Math.max(0, (recStart - planStart) / 60000);
+
+  const PX_PER_MIN = 0.7;
+  const planH = Math.max(52, planDurMin * PX_PER_MIN);
+  const offsetPx = offsetMin * PX_PER_MIN;
+  const actualH = Math.max(32, recDurMin * PX_PER_MIN);
+  const totalH = Math.ceil(Math.max(planH, offsetPx + actualH + 8));
+  const topPx = Math.ceil(offsetPx + 3);
+
+  const endStr = isActive ? '进行中' : fmtTime(record.end);
+  const durStr = isActive ? '计时中…' : fmtDuration(Math.round(recDurMin));
+  const trackCls = 'tl-v2-track overlap ' + plan.category + (isActive ? ' ongoing' : '');
+
+  return `<div class="${trackCls}" style="min-height:${totalH}px">
+    <div class="tl-v2-plan" style="min-height:${Math.ceil(planH)}px">
+      <span>${planCat.icon}</span><span>计划：${planCat.name}</span>
+      <span class="tl-v2-time">${fmtTime(plan.start)} – ${fmtTime(plan.end)}</span>
+    </div>
+    <div class="tl-v2-actual ${record.category}" style="top:${topPx}px;min-height:${Math.ceil(actualH)}px">
+      <span>${recCat.icon} ${recCat.name}</span>
+      <span class="tl-v2-time">${fmtTime(record.start)} – ${endStr}</span>
+      <span class="tl-v2-dur">${durStr}</span>
+      <div class="tl-v2-actions">
+        <button class="tl-action-btn" onclick="event.stopPropagation();editSessionById('${record.id}')">✏️</button>
+        <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${record.id}')">🗑</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPlanOnlyBlock(block) {
+  const plan = block.plan;
+  const cat = PLAN_CATEGORIES[plan.category];
+  const dur = sessionDuration(plan);
+  return `<div class="tl-v2-track plan-only ${plan.category}">
+    <div class="tl-v2-plan">
+      <span>${cat.icon}</span><span>${cat.name}</span>
+      <span class="tl-v2-time">${fmtTime(plan.start)} – ${fmtTime(plan.end)}</span>
+      <span class="tl-v2-dur">${fmtDuration(dur)}</span>
+      <span class="tl-v2-noedit">不可编辑</span>
+    </div>
+  </div>`;
+}
+
+function renderRecordOnlyBlock(block, nowTime) {
+  const record = block.record;
+  const cat = RECORD_CATEGORIES[record.category];
+  const isActive = !record.end;
+  const dur = isActive ? Math.max(0, Math.floor((nowTime - new Date(record.start)) / 60000)) : sessionDuration(record);
+  const endStr = isActive ? '进行中' : fmtTime(record.end);
+  const durStr = isActive ? '计时中…' : fmtDuration(dur);
+  const cls = 'tl-v2-track record-only ' + record.category + (isActive ? ' ongoing' : '');
+  return `<div class="${cls}">
+    <div class="tl-v2-actual">
+      <span>${cat.icon} ${cat.name}</span>
+      <span class="tl-v2-time">${fmtTime(record.start)} – ${endStr}</span>
+      <span class="tl-v2-dur">${durStr}</span>
+      <div class="tl-v2-actions">
+        <button class="tl-action-btn" onclick="event.stopPropagation();editSessionById('${record.id}')">✏️</button>
+        <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${record.id}')">🗑</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderGap(minutes) {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  const text = h > 0 ? `闲置 · ${h}小时${m > 0 ? m + '分' : ''}` : `闲置 · ${m}分`;
+  return `<div class="tl-v2-gap"><span class="tl-v2-gap-dot"></span>${text}</div>`;
+}
+
+function renderNowLine() {
+  return `<div class="tl-v2-now"><div class="tl-v2-now-line"><span class="tl-v2-now-label">NOW</span></div></div>`;
+}
+
 // ========== RENDER ==========
 function renderAll() {
   cleanupExpiredPlans();
@@ -565,7 +861,6 @@ function renderApp() {
   const app=document.getElementById('app');
   const now=new Date();
   const weekdays=['日','一','二','三','四','五','六'];
-  const todaySessions=getTodaySessions();
   const {planStats,recordStats,planTotal,recordTotal}=getTodayStats();
 
   let catDurations={};
@@ -667,35 +962,57 @@ function renderApp() {
     <button class="tab-btn ${currentTab==='settings'?'active':''}" onclick="switchTab('settings')">设置</button>
   </div>`;
 
-  // === TIMELINE ===
+  // === TIMELINE V2 — Vertical Overlay ===
   html+=`<div class="tab-panel ${currentTab==='timeline'?'active':''}" id="panel-timeline">`;
-  if(todaySessions.length===0){
+  const blocks = buildTimelineBlocks();
+  if (blocks.length === 0) {
     html+=`<div class="empty-state"><div class="empty-icon">📋</div><div>今天还没有记录</div><div class="empty-sub">计划或记录一条来开始</div></div>`;
-  }else{
-    html+=`<div class="timeline">`;
-    for(const s of todaySessions){
-      const cats=s.type==='plan'?PLAN_CATEGORIES:RECORD_CATEGORIES;
-      const cat=cats[s.category];
-      const startTime=fmtTime(s.start);
-      const endTime=s.end?fmtTime(s.end):'进行中';
-      const dur=s.end?sessionDuration(s):(activeRecord&&s.id===activeRecord.id?Math.floor((Date.now()-new Date(s.start).getTime())/60000):0);
-      const durStr=s.end?fmtDuration(dur):'计时中…';
-      const badge=s.type==='plan'?'计划':'记录';
-      const badgeCls=s.type;
-      const editable=s.type==='record';
-      html+=`<div class="timeline-entry ${s.type} ${s.category}">
-        <span class="tl-badge ${badgeCls}">${badge}</span>
-        <div class="tl-time">${startTime}<br>${endTime}</div>
-        <div class="tl-info">
-          <div class="tl-cat" style="color:${cat.color}">${cat.icon} ${cat.name}</div>
-          <div class="tl-dur">${durStr}</div>
-        </div>
-        ${editable?`<div class="tl-actions">
-          <button class="tl-action-btn" onclick="event.stopPropagation();editSession(${JSON.stringify(s).replace(/"/g,'&quot;')})">✏️</button>
-          <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${s.id}')">🗑</button>
-        </div>`:`<div class="tl-actions" style="opacity:0.4"><span style="font-size:11px;color:var(--text-muted)">不可编辑</span></div>`}
-      </div>`;
+  } else {
+    html+=`<div class="timeline-v2">`;
+    const nowTime = new Date();
+    let prevEnd = null;
+    let nowInserted = false;
+    let lastHour = -1;
+
+    for (let i = 0; i < blocks.length; i++) {
+      const block = blocks[i];
+      const blockStart = getBlockStartTime(block);
+      const blockEnd = getBlockEndTime(block);
+
+      // Gap before this block
+      if (prevEnd && blockStart > prevEnd) {
+        const gapMin = Math.round((blockStart - prevEnd) / 60000);
+        if (gapMin >= 3) {
+          if (!nowInserted && nowTime > prevEnd && nowTime <= blockStart) {
+            html += renderNowLine();
+            nowInserted = true;
+          }
+          html += renderGap(gapMin);
+        }
+      }
+
+      // NOW line before this block (if it starts after now)
+      if (!nowInserted && prevEnd && nowTime <= blockStart && nowTime > prevEnd) {
+        html += renderNowLine();
+        nowInserted = true;
+      }
+
+      // Hour marker
+      const blockHour = blockStart.getHours();
+      if (blockHour !== lastHour) {
+        html += `<div class="tl-v2-hour">${String(blockHour).padStart(2,'0')}:00</div>`;
+        lastHour = blockHour;
+      }
+
+      html += renderTimelineBlock(block, nowTime);
+      prevEnd = blockEnd;
     }
+
+    // NOW after all blocks
+    if (!nowInserted) {
+      html += renderNowLine();
+    }
+
     html+=`</div>`;
   }
   html+=`</div>`;
