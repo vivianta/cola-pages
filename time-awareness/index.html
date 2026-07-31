@@ -1119,12 +1119,17 @@ function getBlockStartTime(block) {
 function getBlockEndTime(block) {
   if (block.type === 'plan-only') return new Date(block.plan.end);
   if (block.type === 'record-only') {
-    // Active record: use start + 1h as placeholder for ordering (visual extends to now)
-    if (!block.record.end) return new Date(new Date(block.record.start).getTime() + 3600000);
-    return new Date(block.record.end);
+    return block.record.end ? new Date(block.record.end) : new Date();
   }
-  // Overlap with active record: use plan end to prevent extending past next block
-  return new Date(block.plan.end);
+  const planEnd = new Date(block.plan.end);
+  const recEnd = block.record.end ? new Date(block.record.end) : new Date();
+  return new Date(Math.max(planEnd, recEnd));
+}
+
+function blockHasActiveRecord(block) {
+  if (block.type === 'overlap') return !block.record.end;
+  if (block.type === 'record-only') return !block.record.end;
+  return false;
 }
 
 // ========== TIMELINE V2 RENDER HELPERS ==========
