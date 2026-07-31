@@ -895,7 +895,7 @@ function renderNowLine() {
 function renderAll() {
   cleanupExpiredPlans();
   renderApp();
-  if(showEditModal) renderModal();
+  renderModal();
   if(activeRecord && currentMode==='record'){
     removeAlertUI();
     const elapsed=Math.floor((Date.now()-new Date(activeRecord.start).getTime())/60000);
