@@ -26,7 +26,9 @@
   .top-block .plan-info .plan-emoji { font-size:20px; }
   .top-block .plan-info .plan-detail { font-size:13px; font-weight:600; }
   .top-block .plan-info .plan-time { font-size:12px; color:#9ca3af; }
-  .top-block .plan-tip { font-size:10px; color:#b0b0b0; padding:4px 0 2px; }
+  .top-block .plan-tip { font-size:10px; color:#b0b0b0; padding:2px 0; }
+  .top-block .progress-bar { height:4px; background:#e5e7eb; border-radius:2px; overflow:hidden; }
+  .top-block .progress-bar .fill { height:100%; background:#4A90D9; border-radius:2px; transition:width .5s; }
   .top-block .end-btn { margin-top:2px; padding:8px; border-radius:8px; border:1px solid #e8c0c0; background:#fff5f5; color:#c04040; font-size:12px; text-align:center; cursor:pointer; width:100%; }
   .top-block .record-status { display:flex; align-items:center; gap:6px; font-size:12px; color:#9ca3af; }
   .top-block .record-timer { font-size:36px; font-weight:700; color:#4A90D9; text-align:center; font-variant-numeric:tabular-nums; }
@@ -110,6 +112,7 @@
     <div class="status-row"><span class="icon">📋</span><span class="text">当前计划</span></div>
     <div class="plan-info"><span class="plan-emoji">💼</span><span class="plan-detail">工作/学习</span><span class="plan-time">17:20 – 18:20 · 剩余 58分钟</span></div>
     <div class="plan-tip">固定 1 小时 · 不可编辑 · 新计划自动截断上一个</div>
+    <div class="progress-bar"><div class="fill" style="width:3%"></div></div>
     <button class="end-btn">⏹️ 结束当前计划</button>
   </div>
 
@@ -161,7 +164,7 @@ function switchMode(mode) {
 
   if (mode === 'plan') {
     btns[0].classList.add('active'); btns[1].classList.remove('active');
-    topBlock.innerHTML = '<div class="status-row"><span class="icon">📋</span><span class="text">当前计划</span></div><div class="plan-info"><span class="plan-emoji">💼</span><span class="plan-detail">工作/学习</span><span class="plan-time">17:20 – 18:20 · 剩余 58分钟</span></div><div class="plan-tip">固定 1 小时 · 不可编辑 · 新计划自动截断上一个</div><button class="end-btn">⏹️ 结束当前计划</button>';
+    topBlock.innerHTML = '<div class="status-row"><span class="icon">📋</span><span class="text">当前计划</span></div><div class="plan-info"><span class="plan-emoji">💼</span><span class="plan-detail">工作/学习</span><span class="plan-time">17:20 – 18:20 · 剩余 58分钟</span></div><div class="plan-tip">固定 1 小时 · 不可编辑 · 新计划自动截断上一个</div><div class="progress-bar"><div class="fill" style="width:3%"></div></div><button class="end-btn">⏹️ 结束当前计划</button>';
     catRow.innerHTML = `
       <button class="cat-btn work active"><span class="emoji">💼</span>工作</button>
       <button class="cat-btn house"><span class="emoji">🏠</span>家务</button>
