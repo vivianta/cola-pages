@@ -3,14 +3,23 @@
   <ellipse cx="24" cy="40" rx="20" ry="4" fill="#8b7355"/>
   <!-- Stem -->
   <line x1="24" y1="16" x2="24" y2="40" stroke="#4a7a2e" stroke-width="2.5" stroke-linecap="round"/>
-  <!-- Left leaf -->
-  <ellipse cx="17" cy="23" rx="7" ry="5" fill="#5a9a3a" transform="rotate(-25,17,23)"/>
-  <!-- Right leaf -->
-  <ellipse cx="31" cy="21" rx="7" ry="5" fill="#68aa44" transform="rotate(25,31,21)"/>
+  <!-- Lower left leaf -->
+  <ellipse cx="15" cy="26" rx="7" ry="4.5" fill="#4a8a30" transform="rotate(-30,15,26)"/>
+  <!-- Lower right leaf -->
+  <ellipse cx="33" cy="25" rx="7" ry="4.5" fill="#5a9a38" transform="rotate(30,33,25)"/>
+  <!-- Mid left leaf -->
+  <ellipse cx="16" cy="20" rx="6.5" ry="4.5" fill="#68aa44" transform="rotate(-22,16,20)"/>
+  <!-- Mid right leaf -->
+  <ellipse cx="32" cy="19" rx="6.5" ry="4.5" fill="#72b44a" transform="rotate(22,32,19)"/>
+  <!-- Upper left leaf -->
+  <ellipse cx="19" cy="14" rx="5.5" ry="3.5" fill="#7ab84e" transform="rotate(-15,19,14)"/>
+  <!-- Upper right leaf -->
+  <ellipse cx="29" cy="13" rx="5.5" ry="3.5" fill="#82c052" transform="rotate(15,29,13)"/>
   <!-- Top leaf -->
-  <ellipse cx="24" cy="15" rx="6" ry="4.5" fill="#7ab84e" transform="rotate(5,24,15)"/>
+  <ellipse cx="24" cy="9" rx="5" ry="3.5" fill="#8cc654" transform="rotate(3,24,9)"/>
   <!-- Flowers -->
-  <circle cx="19" cy="13" r="2.5" fill="#ff90b0"/>
-  <circle cx="29" cy="14" r="2" fill="#ffb0c8"/>
-  <circle cx="24" cy="10" r="2.2" fill="#ff98b4"/>
+  <circle cx="16" cy="12" r="2.2" fill="#ff90b0"/>
+  <circle cx="22" cy="7" r="2.5" fill="#ffb0c8"/>
+  <circle cx="30" cy="10" r="2" fill="#ff98b4"/>
+  <circle cx="24" cy="13" r="1.8" fill="#ffc4d0"/>
 </svg>
