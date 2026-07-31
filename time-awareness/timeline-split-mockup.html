@@ -9,35 +9,34 @@
   body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f0f2f5; padding:12px; color:#333; }
   .container { max-width:460px; margin:0 auto; }
 
-  /* Mode toggle */
   .mode-toggle { display:flex; gap:0; margin-bottom:10px; background:#e5e7eb; border-radius:10px; padding:3px; }
   .mode-toggle button { flex:1; padding:8px; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; background:transparent; color:#9ca3af; transition:.15s; }
   .mode-toggle button.active { background:#fff; color:#333; box-shadow:0 1px 3px rgba(0,0,0,.1); }
 
-  /* Top block — same height for both modes (56px) */
-  .top-block { background:#fff; border-radius:12px; padding:12px 16px; margin-bottom:10px; height:56px; display:flex; align-items:center; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,.03); }
+  .top-block { background:#fff; border-radius:12px; padding:12px 16px; margin-bottom:10px; min-height:56px; display:flex; align-items:center; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,.03); }
   .top-block .icon { font-size:22px; }
   .top-block .text { font-size:14px; font-weight:600; }
   .top-block .sub  { font-size:11px; color:#9ca3af; }
   .top-block .time-display { margin-left:auto; font-size:28px; font-weight:700; color:#4A90D9; font-variant-numeric:tabular-nums; }
+  .top-block .timer-label { margin-left:auto; text-align:right; }
+  .top-block .timer-label .timer-cat { font-size:12px; color:#9ca3af; }
+  .top-block .timer-label .timer-val { font-size:28px; font-weight:700; color:#4A90D9; font-variant-numeric:tabular-nums; }
+  .pause-indicator { display:inline-block; width:6px; height:6px; border-radius:50%; background:#4A90D9; margin-right:4px; animation:blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:0} 50%{opacity:1} }
 
-  /* Category buttons */
-  .cat-row { display:flex; gap:8px; margin-bottom:10px; }
-  .cat-btn { flex:1; padding:10px 4px; border-radius:10px; border:1.5px solid #e5e7eb; background:#fff; font-size:11px; cursor:pointer; text-align:center; display:flex; flex-direction:column; align-items:center; gap:3px; color:#6b7280; transition:.15s; }
-  .cat-btn .emoji { font-size:18px; }
+  .cat-row { display:flex; gap:6px; margin-bottom:10px; }
+  .cat-btn { flex:1; padding:10px 3px; border-radius:10px; border:1.5px solid #e5e7eb; background:#fff; font-size:10px; cursor:pointer; text-align:center; display:flex; flex-direction:column; align-items:center; gap:3px; color:#6b7280; transition:.15s; }
+  .cat-btn .emoji { font-size:17px; }
   .cat-btn:hover { border-color:#b0b8c0; }
-  .cat-btn.active { border-color:#4A90D9; color:#4A90D9; }
+  .cat-btn.active { border-color:#4A90D9; color:#4A90D9; background:#f0f6ff; }
   .cat-btn.idle { color:#b0b0b0; border-color:#ddd; }
   .cat-btn.idle:hover { border-color:#c0c0c0; background:#fafafa; }
+  .cat-btn.record-stop { flex:0.8; background:#ffe8e8; border-color:#e8c0c0; color:#c04040; font-weight:600; }
+  .cat-btn.record-stop .emoji { font-size:17px; }
 
-  /* Sub text below buttons */
-  .sub-text { font-size:10px; color:#b0b0b0; text-align:center; margin-bottom:8px; }
-
-  /* Date nav */
   .date-nav { display:flex; align-items:center; justify-content:center; gap:12px; padding:4px 0 8px; font-size:15px; font-weight:700; }
   .date-nav .arrow { width:28px; height:28px; border-radius:50%; border:1px solid #e5e7eb; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; color:#6b7280; }
 
-  /* Split timeline section */
   .tl-header { display:flex; margin-bottom:4px; align-items:stretch; }
   .tl-header .h-plan { flex:1; text-align:center; padding:5px 0; font-size:12px; font-weight:600; border-radius:8px; background:#f5f8ff; color:#8a98b4; margin-right:2px; }
   .tl-header .h-axis { width:42px; flex-shrink:0; }
@@ -81,20 +80,19 @@
 </head>
 <body>
 <div class="container">
-  <!-- Mode toggle -->
   <div class="mode-toggle">
-    <button class="active">📋 计划</button>
-    <button>⏱️ 记录</button>
+    <button class="active" onclick="switchMode('plan')">📋 计划</button>
+    <button onclick="switchMode('record')">⏱️ 记录</button>
   </div>
 
-  <!-- Top block — same height as record mode's timer -->
-  <div class="top-block">
+  <!-- Top block — switches content -->
+  <div class="top-block" id="topBlock">
     <span class="icon">📋</span>
-    <div><div class="text">计划模式</div><div class="sub">选择分类 · 每次 1 小时计划</div></div>
+    <div><div class="text">计划模式</div><div class="sub">选择分类 · 每次 1 小时 · 新计划自动截断上一个</div></div>
   </div>
 
-  <!-- Category buttons -->
-  <div class="cat-row">
+  <!-- Category buttons — switches content -->
+  <div class="cat-row" id="catRow">
     <button class="cat-btn active"><span class="emoji">💼</span>工作</button>
     <button class="cat-btn"><span class="emoji">🏠</span>家务</button>
     <button class="cat-btn"><span class="emoji">🏃</span>锻炼</button>
@@ -102,9 +100,7 @@
     <button class="cat-btn"><span class="emoji">📱</span>消遣</button>
     <button class="cat-btn idle"><span class="emoji">🕊️</span>空闲</button>
   </div>
-  <div class="sub-text">固定 1 小时 · 新计划自动截断上一个</div>
 
-  <!-- Date nav -->
   <div class="date-nav">
     <div class="arrow">←</div>
     <div>2026.07.31 周五</div>
@@ -112,7 +108,6 @@
     <button style="font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid #e5e7eb;background:#fff;color:#4A90D9;cursor:pointer;">今天</button>
   </div>
 
-  <!-- Split timeline -->
   <div class="tl-header">
     <div class="h-plan">计划</div>
     <div class="h-axis"></div>
@@ -137,6 +132,34 @@
 </div>
 
 <script>
+function switchMode(mode) {
+  const btns = document.querySelectorAll('.mode-toggle button');
+  const topBlock = document.getElementById('topBlock');
+  const catRow = document.getElementById('catRow');
+
+  if (mode === 'plan') {
+    btns[0].classList.add('active'); btns[1].classList.remove('active');
+    topBlock.innerHTML = '<span class="icon">📋</span><div><div class="text">计划模式</div><div class="sub">选择分类 · 每次 1 小时 · 新计划自动截断上一个</div></div>';
+    catRow.innerHTML = `
+      <button class="cat-btn active"><span class="emoji">💼</span>工作</button>
+      <button class="cat-btn"><span class="emoji">🏠</span>家务</button>
+      <button class="cat-btn"><span class="emoji">🏃</span>锻炼</button>
+      <button class="cat-btn"><span class="emoji">🔋</span>充电</button>
+      <button class="cat-btn"><span class="emoji">📱</span>消遣</button>
+      <button class="cat-btn idle"><span class="emoji">🕊️</span>空闲</button>`;
+  } else {
+    btns[1].classList.add('active'); btns[0].classList.remove('active');
+    topBlock.innerHTML = '<span class="icon">⏱️</span><div><div class="text">记录模式</div><div class="sub">点击分类开始计时</div></div><div class="timer-label"><div class="timer-cat"><span class="pause-indicator"></span> 💼 工作中</div><div class="timer-val">00:32:15</div></div>';
+    catRow.innerHTML = `
+      <button class="cat-btn"><span class="emoji">💼</span>工作</button>
+      <button class="cat-btn"><span class="emoji">🏠</span>家务</button>
+      <button class="cat-btn"><span class="emoji">🏃</span>锻炼</button>
+      <button class="cat-btn"><span class="emoji">🔋</span>充电</button>
+      <button class="cat-btn"><span class="emoji">📱</span>消遣</button>
+      <button class="cat-btn record-stop"><span class="emoji">⏸️</span>停止</button>`;
+  }
+}
+
 const PX_PER_MIN = 2.2;
 const START_HOUR = 6;
 const END_HOUR = 22;
@@ -191,8 +214,6 @@ plans.forEach(p => {
   el.innerHTML = `${p.cat} ${p.label}<span class="time-inner">${p.start}–${p.end}</span>`;
   planCol.appendChild(el);
 });
-
-// Plan gaps (grey)
 let pPrev = 0;
 plans.forEach(p => {
   const s = timeToMin(p.start);
@@ -221,7 +242,6 @@ records.forEach(r => {
   el.innerHTML = `${r.cat} ${r.label}<span class="time-inner">${r.start}–${r.end}</span>`;
   recordCol.appendChild(el);
 });
-
 let prevEnd = 0;
 records.forEach(r => {
   const s = timeToMin(r.start);
