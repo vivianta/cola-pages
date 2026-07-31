@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>时间知觉</title>
+<style>
+:root {
+  --work: #4A90D9;      --work-bg: #EDF4FC;    --work-light: #DBEAFE;
+  --chores: #4CAF84;    --chores-bg: #EDF8F1;  --chores-light: #D1FAE5;
+  --exercise: #F09B4A;  --exercise-bg: #FEF6EE; --exercise-light: #FED7AA;
+  --recharge: #8B7EC8;  --recharge-bg: #F4F2FA; --recharge-light: #E0D9F5;
+  --entertainment: #E0687A; --entertainment-bg: #FDF0F3; --entertainment-light: #FECDD3;
+  --unrecorded: #9CA3AF; --unrecorded-bg: #F3F4F6;
+  --sync: #10B981;
+  --bg: #FAF9F7;
+  --surface: #FFFFFF;
+  --text: #2D2D2D;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  --border: #E5E7EB;
+  --radius: 14px; --radius-sm: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.container { max-width: 520px; margin: 0 auto; padding: 16px 16px 100px; }
+
+.header { text-align: center; padding: 8px 0 12px; }
+.header .date { font-size: 15px; color: var(--text-secondary); font-weight: 500; }
+.header .weekday { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.sync-indicator {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--text-muted); margin-top: 4px; cursor: pointer;
+}
+.sync-indicator .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); }
+.sync-indicator.synced .dot { background: var(--sync); }
+.sync-indicator.error .dot { background: var(--entertainment); }
+.sync-indicator.syncing .dot { animation: blink 0.6s infinite; background: #F59E0B; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.mode-toggle {
+  display: flex; gap: 0; background: var(--surface); border-radius: var(--radius);
+  padding: 4px; margin-bottom: 16px; box-shadow: var(--shadow);
+}
+.mode-btn {
+  flex: 1; padding: 10px; border: none; background: transparent; border-radius: var(--radius-sm);
+  font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--font);
+  transition: all 0.15s; color: var(--text-muted);
+}
+.mode-btn.active { background: var(--text); color: white; }
+
+.status-card {
+  background: var(--surface); border-radius: var(--radius); padding: 16px 20px;
+  margin-bottom: 16px; box-shadow: var(--shadow); text-align: center;
+  border: 2px solid transparent; transition: all 0.3s;
+}
+.status-card.active { border-color: var(--border); }
+.status-card .status-label { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+.status-card .status-main { font-size: 17px; font-weight: 700; }
+.status-card .status-time { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+.status-card .status-bar {
+  height: 4px; background: var(--bg); border-radius: 2px; margin-top: 12px; overflow: hidden;
+}
+.status-card .status-bar-fill { height: 100%; border-radius: 2px; transition: width 1s linear; }
+.status-card.empty .status-main { color: var(--text-muted); font-size: 15px; font-weight: 500; }
+.status-card .stop-btn {
+  margin-top: 10px; font-size: 12px; padding: 5px 14px; border: 1.5px solid var(--border);
+  border-radius: 20px; background: var(--surface); color: var(--text-secondary);
+  cursor: pointer; font-family: var(--font); font-weight: 600;
+}
+
+.category-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;
+}
+.cat-btn {
+  background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius);
+  padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.15s;
+  box-shadow: var(--shadow); position: relative;
+}
+.cat-btn:active { transform: scale(0.97); }
+.cat-btn .cat-icon { font-size: 26px; display: block; margin-bottom: 4px; }
+.cat-btn .cat-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.cat-btn.active { transform: scale(1.03); box-shadow: var(--shadow-md); }
+.cat-btn.work.active { border-color: var(--work); background: var(--work-bg); }
+.cat-btn.chores.active { border-color: var(--chores); background: var(--chores-bg); }
+.cat-btn.exercise.active { border-color: var(--exercise); background: var(--exercise-bg); }
+.cat-btn.recharge.active { border-color: var(--recharge); background: var(--recharge-bg); }
+.cat-btn.entertainment.active { border-color: var(--entertainment); background: var(--entertainment-bg); }
+.cat-btn.unrecorded.active { border-color: var(--unrecorded); background: var(--unrecorded-bg); }
+
+.cat-btn.entertainment.alerting {
+  animation: alertPulse 0.8s ease-in-out infinite;
+  border-color: #E04050;
+}
+@keyframes alertPulse {
+  0%, 100% { background: var(--entertainment-bg); }
+  50% { background: #FEE2E5; }
+}
+
+.tabs {
+  display: flex; gap: 4px; background: var(--surface); border-radius: var(--radius);
+  padding: 4px; margin-bottom: 16px; box-shadow: var(--shadow);
+}
+.tab-btn {
+  flex: 1; padding: 10px; border: none; background: transparent; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; color: var(--text-muted); cursor: pointer;
+  font-family: var(--font); transition: all 0.15s;
+}
+.tab-btn.active { background: var(--text); color: white; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.timeline { display: flex; flex-direction: column; gap: 8px; }
+.timeline-entry {
+  background: var(--surface); border-radius: var(--radius-sm); padding: 12px 14px;
+  box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px;
+  border-left: 4px solid transparent; position: relative;
+}
+.timeline-entry.plan { border-left-style: dashed; }
+.timeline-entry.record { border-left-style: solid; }
+.timeline-entry.work { border-left-color: var(--work); }
+.timeline-entry.chores { border-left-color: var(--chores); }
+.timeline-entry.exercise { border-left-color: var(--exercise); }
+.timeline-entry.recharge { border-left-color: var(--recharge); }
+.timeline-entry.entertainment { border-left-color: var(--entertainment); }
+.timeline-entry.unrecorded { border-left-color: var(--unrecorded); }
+
+.timeline-entry .tl-badge {
+  position: absolute; top: 6px; right: 10px; font-size: 10px; font-weight: 700;
+  padding: 1px 7px; border-radius: 8px; letter-spacing: 0.5px;
+}
+.timeline-entry .tl-badge.plan { background: #EFF6FF; color: #3B82F6; }
+.timeline-entry .tl-badge.record { background: #F0FDF4; color: #16A34A; }
+
+.timeline-entry .tl-time { font-size: 13px; color: var(--text-secondary); min-width: 88px; font-variant-numeric: tabular-nums; }
+.timeline-entry .tl-info { flex: 1; min-width: 0; }
+.timeline-entry .tl-cat { font-size: 14px; font-weight: 600; }
+.timeline-entry .tl-dur { font-size: 12px; color: var(--text-muted); }
+.timeline-entry .tl-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; }
+.timeline-entry:hover .tl-actions,
+.timeline-entry:focus-within .tl-actions { opacity: 1; }
+.tl-action-btn {
+  width: 28px; height: 28px; border: none; background: var(--bg); border-radius: 6px;
+  cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary);
+}
+.tl-action-btn:hover { background: #E5E7EB; }
+.tl-action-btn.danger:hover { background: #FEE2E5; color: #E04050; }
+
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
+.empty-state .empty-icon { font-size: 40px; margin-bottom: 8px; }
+.empty-state .empty-sub { font-size: 12px; margin-top: 4px; }
+
+.stats-section { margin-bottom: 20px; }
+.stats-section h3 { font-size: 14px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 600; }
+.stats-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+.stat-card {
+  background: var(--surface); border-radius: var(--radius-sm); padding: 14px;
+  box-shadow: var(--shadow); text-align: center;
+}
+.stat-card .stat-cat { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.stat-card .stat-val { font-size: 22px; font-weight: 700; }
+.stat-card .stat-pct { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+.bar-chart { display: flex; flex-direction: column; gap: 6px; }
+.bar-row { display: flex; align-items: center; gap: 10px; }
+.bar-label { width: 72px; font-size: 13px; font-weight: 600; text-align: right; flex-shrink: 0; }
+.bar-track { flex: 1; height: 22px; background: var(--bg); border-radius: 6px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 6px; transition: width 0.4s ease; min-width: 2px; }
+.bar-val { width: 50px; font-size: 12px; color: var(--text-secondary); flex-shrink: 0; }
+
+.plan-vs-record { margin-top: 16px; }
+.pvr-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.pvr-label { width: 72px; font-size: 13px; font-weight: 600; text-align: right; flex-shrink: 0; }
+.pvr-bars { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.pvr-track { height: 18px; background: var(--bg); border-radius: 6px; overflow: hidden; }
+.pvr-fill { height: 100%; border-radius: 6px; }
+
+.settings-section { margin-bottom: 20px; }
+.settings-section h3 { font-size: 14px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 600; }
+.settings-section .hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+.btn {
+  padding: 10px 20px; border: none; border-radius: var(--radius-sm); font-size: 14px;
+  font-weight: 600; cursor: pointer; font-family: var(--font); transition: all 0.15s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--text); color: white; }
+.btn-secondary { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); box-shadow: var(--shadow); }
+.btn-sync { background: var(--sync); color: white; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.input-row { display: flex; gap: 8px; }
+.input-row input {
+  flex: 1; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 14px; font-family: var(--font); background: var(--bg); color: var(--text);
+}
+.input-row input:focus { outline: none; border-color: var(--work); }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: flex-end; justify-content: center; z-index: 100;
+  animation: fadeIn 0.15s;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-sheet {
+  background: var(--surface); border-radius: 20px 20px 0 0; padding: 24px;
+  width: 100%; max-width: 520px; animation: slideUp 0.2s;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-sheet h3 { font-size: 17px; margin-bottom: 16px; }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 500; }
+.form-group input, .form-group select {
+  width: 100%; padding: 10px 12px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 15px; font-family: var(--font);
+  background: var(--bg); color: var(--text);
+}
+.form-group input:focus, .form-group select:focus { outline: none; border-color: var(--work); }
+
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: white; padding: 10px 24px; border-radius: 20px;
+  font-size: 14px; font-weight: 600; z-index: 200;
+  animation: toastIn 0.2s, toastOut 0.2s 1.8s forwards;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } }
+@keyframes toastOut { to { opacity: 0; transform: translateX(-50%) translateY(10px); } }
+
+@media (max-width: 400px) {
+  .cat-btn { padding: 12px 6px; }
+  .cat-btn .cat-icon { font-size: 22px; }
+  .cat-btn .cat-name { font-size: 12px; }
+}
+
+/* ===== Timeline V2 — Vertical Overlay ===== */
+.timeline-v2 { position: relative; }
+
+.tl-v2-hour {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--text-muted);
+  padding: 8px 0 4px 0; margin-bottom: 2px;
+}
+.tl-v2-hour::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border); flex-shrink: 0;
+}
+.tl-v2-hour::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+.tl-v2-track {
+  position: relative; border-radius: 12px;
+  margin-bottom: 8px; overflow: visible;
+}
+
+/* Plan layer (background) */
+.tl-v2-plan {
+  border-radius: 12px; padding: 10px 14px; min-height: 46px;
+  border: 2px dashed; display: flex; align-items: center;
+  gap: 6px; font-size: 13px; flex-wrap: wrap;
+}
+.tl-v2-plan .tl-v2-time { font-size: 11px; opacity: 0.7; }
+.tl-v2-plan .tl-v2-dur { color: inherit; opacity: 0.6; font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+/* Actual layer (foreground, overlaid) */
+.tl-v2-actual {
+  border-radius: 10px; padding: 10px 14px; min-height: 38px;
+  color: #fff; display: flex; align-items: center;
+  gap: 6px; font-size: 13px; flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.tl-v2-actual .tl-v2-time { font-size: 11px; opacity: 0.85; }
+.tl-v2-actual .tl-v2-dur { font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+/* No-edit label */
+.tl-v2-noedit {
+  font-size: 11px; color: var(--text-muted); opacity: 0.5;
+  white-space: nowrap;
+}
+
+/* Action buttons (hover reveal) */
+.tl-v2-actions {
+  display: flex; gap: 2px; opacity: 0;
+  transition: opacity 0.15s; flex-shrink: 0;
+}
+.tl-v2-track:hover .tl-v2-actions,
+.tl-v2-track:focus-within .tl-v2-actions { opacity: 1; }
+
+/* ===== Block type variants ===== */
+
+/* Overlap: plan behind, actual overlaid on top */
+.tl-v2-track.overlap { position: relative; }
+.tl-v2-track.overlap .tl-v2-plan { padding-bottom: 14px; }
+.tl-v2-track.overlap .tl-v2-actual {
+  position: absolute; left: 4px; right: 4px;
+}
+
+/* Plan-only: muted empty-plan style */
+.tl-v2-track.plan-only .tl-v2-plan {
+  border-style: dashed; border-color: var(--border);
+  background: #f9fafb; color: var(--text-muted);
+}
+.tl-v2-track.plan-only .tl-v2-actual { display: none; }
+
+/* Record-only: standalone solid block */
+.tl-v2-track.record-only .tl-v2-plan { display: none; }
+.tl-v2-track.record-only .tl-v2-actual {
+  position: static; border-radius: 12px;
+}
+
+/* ===== Category color mapping ===== */
+.tl-v2-track.work .tl-v2-plan { border-color: #c4d4f0; background: var(--work-bg); }
+.tl-v2-track.work .tl-v2-actual { background: var(--work); }
+
+.tl-v2-track.chores .tl-v2-plan { border-color: #b8dcc8; background: var(--chores-bg); }
+.tl-v2-track.chores .tl-v2-actual { background: var(--chores); }
+
+.tl-v2-track.exercise .tl-v2-plan { border-color: #f0d4a8; background: var(--exercise-bg); }
+.tl-v2-track.exercise .tl-v2-actual { background: var(--exercise); }
+
+.tl-v2-track.recharge .tl-v2-plan { border-color: #d0c8f0; background: var(--recharge-bg); }
+.tl-v2-track.recharge .tl-v2-actual { background: var(--recharge); }
+
+.tl-v2-track.entertainment .tl-v2-plan { border-color: #f5c4ce; background: var(--entertainment-bg); }
+.tl-v2-track.entertainment .tl-v2-actual { background: var(--entertainment); }
+
+.tl-v2-track.unrecorded .tl-v2-actual { background: var(--unrecorded); }
+
+/* ===== Gap / idle indicator ===== */
+.tl-v2-gap {
+  margin-bottom: 8px; padding: 6px 14px; border-radius: 8px;
+  background: #fafafa; border: 1px dashed var(--border);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--text-muted);
+}
+.tl-v2-gap-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border); flex-shrink: 0;
+}
+
+/* ===== NOW line ===== */
+.tl-v2-now { position: relative; margin: 10px 0; }
+.tl-v2-now-line {
+  height: 2px; background: #ef4444; border-radius: 1px;
+  position: relative;
+}
+.tl-v2-now-label {
+  position: absolute; top: -8px; left: -44px;
+  font-size: 10px; font-weight: 700; color: #ef4444;
+  background: var(--bg); padding: 0 4px;
+}
+.tl-v2-now-line::after {
+  content: ''; position: absolute; left: -4px; top: -3px;
+  width: 8px; height: 8px; border-radius: 50%; background: #ef4444;
+}
+
+/* Ongoing pulse */
+.tl-v2-track.ongoing .tl-v2-actual {
+  animation: ongoingPulse 2s ease-in-out infinite;
+}
+@keyframes ongoingPulse {
+  0%, 100% { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  50% { box-shadow: 0 2px 18px rgba(0,0,0,0.28); }
+}
+
+@media (max-width: 400px) {
+  .tl-v2-plan, .tl-v2-actual { font-size: 12px; padding: 8px 10px; }
+  .tl-v2-dur { font-size: 11px; }
+}
+</style>
+</head>
+<body>
+<div class="container" id="app"></div>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script>
+// ========== CATEGORIES ==========
+const PLAN_CATEGORIES = {
+  work:          { name:'工作/学习', icon:'💼', color:'#4A90D9', bg:'#EDF4FC' },
+  chores:        { name:'家务',      icon:'🏠', color:'#4CAF84', bg:'#EDF8F1' },
+  exercise:      { name:'锻炼',      icon:'🏃', color:'#F09B4A', bg:'#FEF6EE' },
+  recharge:      { name:'充电',      icon:'🔋', color:'#8B7EC8', bg:'#F4F2FA' },
+  entertainment: { name:'消遣',      icon:'📱', color:'#E0687A', bg:'#FDF0F3' },
+};
+const RECORD_CATEGORIES = { ...PLAN_CATEGORIES, unrecorded:{ name:'未记录', icon:'❓', color:'#9CA3AF', bg:'#F3F4F6' } };
+const ENTERTAINMENT_ALERT_MIN = 20;
+const PLAN_DURATION_MIN = 60;
+const STORAGE_KEY = 'timeperception_v2_data';
+const STATE_KEY = 'timeperception_v2_state';
+const SYNC_URL_KEY = 'timeperception_sync_url';
+const SYNC_DEBOUNCE_MS = 3000;
+
+// ========== HELPERS ==========
+function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function fmtTime(iso) { return new Date(iso).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}); }
+function fmtDuration(min) {
+  if(min<=0) return '0分钟';
+  if(min<60) return `${min}分钟`;
+  const h=Math.floor(min/60), m=min%60;
+  return m>0?`${h}小时${m}分`:`${h}小时`;
+}
+function sessionDuration(s) {
+  if(!s.end) return 0;
+  return Math.round((new Date(s.end)-new Date(s.start))/60000);
+}
+function isToday(iso) { return new Date(iso).toDateString()===new Date().toDateString(); }
+function todayStr() {
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function debounce(fn, ms) { let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),ms); }; }
+
+// ========== LOCAL STORAGE ==========
+function loadLocal() {
+  try { const d=JSON.parse(localStorage.getItem(STORAGE_KEY)); return d&&d.sessions?d:{sessions:[]}; }
+  catch { return {sessions:[]}; }
+}
+function saveLocal(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+function loadState() { try{return JSON.parse(localStorage.getItem(STATE_KEY));}catch{return null;} }
+function saveState(s) { if(s) localStorage.setItem(STATE_KEY,JSON.stringify(s)); else localStorage.removeItem(STATE_KEY); }
+
+// ========== SYNC ==========
+function getSyncUrl() { return localStorage.getItem(SYNC_URL_KEY)||''; }
+function setSyncUrl(url) { localStorage.setItem(SYNC_URL_KEY, url); }
+
+async function pullFromCloud() {
+  const url = getSyncUrl();
+  if (!url) return null;
+  try {
+    const resp = await fetch(url, { method: 'GET', signal: AbortSignal.timeout(5000) });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const cloudData = await resp.json();
+    if (cloudData && Array.isArray(cloudData.sessions)) return cloudData;
+    return null;
+  } catch(e) {
+    console.warn('Pull failed:', e.message);
+    return null;
+  }
+}
+
+async function pushToCloud(data) {
+  const url = getSyncUrl();
+  if (!url) return;
+  try {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(data),
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return true;
+  } catch(e) {
+    console.warn('Push failed:', e.message);
+    return false;
+  }
+}
+
+const debouncedPush = debounce(async (data) => {
+  updateSyncStatus('syncing');
+  const ok = await pushToCloud(data);
+  updateSyncStatus(ok ? 'synced' : 'error');
+}, SYNC_DEBOUNCE_MS);
+
+function updateSyncStatus(status) {
+  const el = document.getElementById('sync-dot');
+  if (!el) return;
+  const parent = el.parentElement;
+  parent.className = 'sync-indicator ' + status;
+  const labels = { synced: '已同步', syncing: '同步中…', error: '同步失败', offline: '未设置同步' };
+  parent.lastChild.textContent = labels[status] || '';
+}
+
+// ========== DATA MANAGEMENT ==========
+let data = { sessions: [] };
+let state = loadState();
+let activePlan = state?.plan || null;
+let activeRecord = state?.record || null;
+let sessionTimers = {};
+let recordStartTime = null;
+let alertTriggered = {};
+let currentTab = 'timeline';
+let currentMode = 'plan';
+let editingSession = null;
+let showEditModal = false;
+let syncStatus = 'offline';
+
+function saveDataAndSync() {
+  saveLocal(data);
+  persistState();
+  debouncedPush(data);
+}
+
+function persistState() {
+  saveState({ plan: activePlan, record: activeRecord });
+}
+
+// ========== PLAN LOGIC ==========
+function startPlan(category) {
+  const now = new Date().toISOString();
+  const endTime = new Date(Date.now() + PLAN_DURATION_MIN * 60000).toISOString();
+  if (activePlan) {
+    const prev = data.sessions.find(s => s.id === activePlan.id);
+    if (prev && new Date(prev.end) > new Date(now)) prev.end = now;
+  }
+  const session = { id: uid(), type: 'plan', category, start: now, end: endTime };
+  data.sessions.push(session);
+  activePlan = session;
+  saveDataAndSync();
+  renderAll();
+}
+
+function stopPlan() {
+  if (!activePlan) return;
+  const session = data.sessions.find(s => s.id === activePlan.id);
+  if (session) { session.end = new Date().toISOString(); }
+  activePlan = null;
+  saveDataAndSync();
+  renderAll();
+}
+
+let planAlertedIds = new Set();
+function cleanupExpiredPlans() {
+  if (activePlan && new Date(activePlan.end) <= new Date()) {
+    if (!planAlertedIds.has(activePlan.id)) {
+      planAlertedIds.add(activePlan.id);
+      playPlanChime();
+      try { navigator.vibrate?.([200, 100, 200]); } catch(e) {}
+    }
+    activePlan = null;
+    persistState();
+  }
+}
+
+// ========== RECORD LOGIC ==========
+function startRecord(category) {
+  const now = new Date().toISOString();
+  if (activeRecord) endRecord(now);
+  const session = { id: uid(), type: 'record', category, start: now, end: null };
+  data.sessions.push(session);
+  activeRecord = session;
+  recordStartTime = Date.now();
+  persistState();
+  saveLocal(data);
+  debouncedPush(data);
+  startRecordTimer(session);
+  renderAll();
+}
+
+function endRecord(endTime) {
+  if (!activeRecord) return;
+  const session = data.sessions.find(s => s.id === activeRecord.id);
+  if (session) session.end = endTime || new Date().toISOString();
+  stopRecordTimer(activeRecord.id);
+  activeRecord = null;
+  recordStartTime = null;
+  saveDataAndSync();
+}
+
+function startRecordTimer(session) {
+  stopRecordTimer(session.id);
+  sessionTimers[session.id] = setInterval(() => {
+    updateRecordDisplay();
+    checkEntertainmentAlert(session);
+  }, 1000);
+}
+function stopRecordTimer(id) {
+  if (sessionTimers[id]) { clearInterval(sessionTimers[id]); delete sessionTimers[id]; }
+}
+
+function checkEntertainmentAlert(session) {
+  if (session.category !== 'entertainment' || !session.start) return;
+  const elapsed = Math.floor((Date.now() - new Date(session.start).getTime()) / 60000);
+  if (elapsed >= ENTERTAINMENT_ALERT_MIN && !alertTriggered[session.id]) {
+    alertTriggered[session.id] = true;
+    triggerAlert();
+  }
+}
+
+let lastAlertTime = 0;
+function triggerAlert() {
+  const now = Date.now();
+  if (now - lastAlertTime < 60000) return;
+  lastAlertTime = now;
+  playChime();
+  try { navigator.vibrate?.([300, 150, 300]); } catch(e) {}
+  setTimeout(updateAlertUI, 50);
+}
+function playChime() {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [659.25,783.99].forEach((freq,i)=>{
+      const osc=ctx.createOscillator(); osc.type='sine'; osc.frequency.value=freq;
+      const g=ctx.createGain(); g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.25,ctx.currentTime+i*0.25);
+      g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+i*0.25+0.5);
+      osc.connect(g); osc.start(ctx.currentTime+i*0.25); osc.stop(ctx.currentTime+i*0.25+0.5);
+    });
+  }catch(e){}
+}
+function playPlanChime() {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    // Gentle C-E-G major triad arpeggio (warm "task complete" feel)
+    [523.25, 659.25, 783.99].forEach((freq, i) => {
+      const t = ctx.currentTime + i * 0.3;
+      const osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.value = freq;
+      const g = ctx.createGain(); g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.2, t);
+      g.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
+      osc.connect(g); osc.start(t); osc.stop(t + 0.6);
+    });
+  } catch(e) {}
+}
+function updateAlertUI() {
+  document.querySelectorAll('.cat-btn.entertainment').forEach(b=>b.classList.add('alerting'));
+}
+function removeAlertUI() {
+  document.querySelectorAll('.cat-btn.entertainment').forEach(b=>b.classList.remove('alerting'));
+}
+
+function updateRecordDisplay() {
+  if (!activeRecord || !recordStartTime) return;
+  const elapsed=Math.floor((Date.now()-recordStartTime)/1000);
+  const h=Math.floor(elapsed/3600),m=Math.floor((elapsed%3600)/60),s=elapsed%60;
+  const el=document.getElementById('record-timer');
+  if(el) el.textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+// ========== EDIT / DELETE ==========
+function editSession(session) {
+  if (session.type === 'plan') return;
+  editingSession = session;
+  showEditModal = true;
+  renderModal();
+}
+function editSessionById(id) {
+  const s = data.sessions.find(x => x.id === id);
+  if (s) editSession(s);
+}
+function updateSession(id, updates) {
+  const s = data.sessions.find(x=>x.id===id);
+  if(!s) return;
+  Object.assign(s, updates);
+  saveDataAndSync();
+  showEditModal = false;
+  editingSession = null;
+  renderAll();
+}
+function deleteSession(id) {
+  if(activeRecord&&activeRecord.id===id){stopRecordTimer(id);activeRecord=null;recordStartTime=null;persistState();}
+  if(activePlan&&activePlan.id===id){activePlan=null;persistState();}
+  data.sessions=data.sessions.filter(s=>s.id!==id);
+  saveDataAndSync();
+  renderAll();
+}
+
+// ========== QUERIES ==========
+function getTodaySessions() {
+  return data.sessions.filter(s=>isToday(s.start)).sort((a,b)=>new Date(a.start)-new Date(b.start));
+}
+function getTodayStats() {
+  const sessions=getTodaySessions();
+  const planStats={}, recordStats={};
+  for(const k of Object.keys(PLAN_CATEGORIES)){planStats[k]=0;}
+  for(const k of Object.keys(RECORD_CATEGORIES)){recordStats[k]=0;}
+  let planTotal=0, recordTotal=0;
+  for(const s of sessions){
+    const dur=s.end?sessionDuration(s):(activeRecord&&s.id===activeRecord.id?Math.floor((Date.now()-new Date(s.start).getTime())/60000):0);
+    if(s.type==='plan'){planStats[s.category]+=dur;planTotal+=dur;}
+    else{recordStats[s.category]+=dur;recordTotal+=dur;}
+  }
+  return {planStats,recordStats,planTotal,recordTotal};
+}
+function getActivePlanRemaining() {
+  if(!activePlan) return 0;
+  return Math.max(0,Math.floor((new Date(activePlan.end)-Date.now())/60000));
+}
+
+// ========== TIMELINE V2 BLOCK CONSTRUCTION ==========
+function buildTimelineBlocks() {
+  const sessions = getTodaySessions();
+  const plans = sessions.filter(s => s.type === 'plan');
+  const records = sessions.filter(s => s.type === 'record');
+  const pairedRecordIds = new Set();
+  const blocks = [];
+
+  for (const plan of plans) {
+    const planStart = new Date(plan.start);
+    const planEnd = new Date(plan.end);
+    let bestRecord = null;
+    let bestOverlap = 0;
+
+    for (const record of records) {
+      if (pairedRecordIds.has(record.id)) continue;
+      const recStart = new Date(record.start);
+      const recEnd = record.end ? new Date(record.end) : new Date();
+      const overlapStart = Math.max(planStart, recStart);
+      const overlapEnd = Math.min(planEnd, recEnd);
+      const overlap = (overlapEnd - overlapStart) / 60000;
+      if (overlap > bestOverlap) {
+        bestOverlap = overlap;
+        bestRecord = record;
+      }
+    }
+
+    if (bestRecord && bestOverlap > 0) {
+      pairedRecordIds.add(bestRecord.id);
+      blocks.push({ type: 'overlap', plan, record: bestRecord });
+    } else {
+      blocks.push({ type: 'plan-only', plan });
+    }
+  }
+
+  for (const record of records) {
+    if (!pairedRecordIds.has(record.id)) {
+      blocks.push({ type: 'record-only', record });
+    }
+  }
+
+  blocks.sort((a, b) => getBlockStartTime(a) - getBlockStartTime(b));
+  return blocks;
+}
+
+function getBlockStartTime(block) {
+  if (block.type === 'plan-only') return new Date(block.plan.start);
+  if (block.type === 'record-only') return new Date(block.record.start);
+  return new Date(Math.min(new Date(block.plan.start), new Date(block.record.start)));
+}
+
+function getBlockEndTime(block) {
+  if (block.type === 'plan-only') return new Date(block.plan.end);
+  if (block.type === 'record-only') {
+    return block.record.end ? new Date(block.record.end) : new Date();
+  }
+  const planEnd = new Date(block.plan.end);
+  const recEnd = block.record.end ? new Date(block.record.end) : new Date();
+  return new Date(Math.max(planEnd, recEnd));
+}
+
+// ========== TIMELINE V2 RENDER HELPERS ==========
+function renderTimelineBlock(block, nowTime) {
+  if (block.type === 'overlap') return renderOverlapBlock(block, nowTime);
+  if (block.type === 'plan-only') return renderPlanOnlyBlock(block);
+  if (block.type === 'record-only') return renderRecordOnlyBlock(block, nowTime);
+  return '';
+}
+
+function renderOverlapBlock(block, nowTime) {
+  const plan = block.plan, record = block.record;
+  const planCat = PLAN_CATEGORIES[plan.category];
+  const recCat = RECORD_CATEGORIES[record.category];
+  const planStart = new Date(plan.start), planEnd = new Date(plan.end);
+  const recStart = new Date(record.start);
+  const recEnd = record.end ? new Date(record.end) : new Date();
+  const isActive = !record.end;
+
+  const planDurMin = Math.max(1, (planEnd - planStart) / 60000);
+  const recDurMin = Math.max(1, (recEnd - recStart) / 60000);
+  const offsetMin = Math.max(0, (recStart - planStart) / 60000);
+
+  const PX_PER_MIN = 0.7;
+  const planH = Math.max(52, planDurMin * PX_PER_MIN);
+  const offsetPx = offsetMin * PX_PER_MIN;
+  const actualH = Math.max(32, recDurMin * PX_PER_MIN);
+  const totalH = Math.ceil(Math.max(planH, offsetPx + actualH + 8));
+  const topPx = Math.ceil(offsetPx + 3);
+
+  const endStr = isActive ? '进行中' : fmtTime(record.end);
+  const durStr = isActive ? '计时中…' : fmtDuration(Math.round(recDurMin));
+  const trackCls = 'tl-v2-track overlap ' + plan.category + (isActive ? ' ongoing' : '');
+
+  return `<div class="${trackCls}" style="min-height:${totalH}px">
+    <div class="tl-v2-plan" style="min-height:${Math.ceil(planH)}px">
+      <span>${planCat.icon}</span><span>计划：${planCat.name}</span>
+      <span class="tl-v2-time">${fmtTime(plan.start)} – ${fmtTime(plan.end)}</span>
+    </div>
+    <div class="tl-v2-actual ${record.category}" style="top:${topPx}px;min-height:${Math.ceil(actualH)}px">
+      <span>${recCat.icon} ${recCat.name}</span>
+      <span class="tl-v2-time">${fmtTime(record.start)} – ${endStr}</span>
+      <span class="tl-v2-dur">${durStr}</span>
+      <div class="tl-v2-actions">
+        <button class="tl-action-btn" onclick="event.stopPropagation();editSessionById('${record.id}')">✏️</button>
+        <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${record.id}')">🗑</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPlanOnlyBlock(block) {
+  const plan = block.plan;
+  const cat = PLAN_CATEGORIES[plan.category];
+  const dur = sessionDuration(plan);
+  return `<div class="tl-v2-track plan-only ${plan.category}">
+    <div class="tl-v2-plan">
+      <span>${cat.icon}</span><span>${cat.name}</span>
+      <span class="tl-v2-time">${fmtTime(plan.start)} – ${fmtTime(plan.end)}</span>
+      <span class="tl-v2-dur">${fmtDuration(dur)}</span>
+      <span class="tl-v2-noedit">不可编辑</span>
+    </div>
+  </div>`;
+}
+
+function renderRecordOnlyBlock(block, nowTime) {
+  const record = block.record;
+  const cat = RECORD_CATEGORIES[record.category];
+  const isActive = !record.end;
+  const dur = isActive ? Math.max(0, Math.floor((nowTime - new Date(record.start)) / 60000)) : sessionDuration(record);
+  const endStr = isActive ? '进行中' : fmtTime(record.end);
+  const durStr = isActive ? '计时中…' : fmtDuration(dur);
+  const cls = 'tl-v2-track record-only ' + record.category + (isActive ? ' ongoing' : '');
+  return `<div class="${cls}">
+    <div class="tl-v2-actual">
+      <span>${cat.icon} ${cat.name}</span>
+      <span class="tl-v2-time">${fmtTime(record.start)} – ${endStr}</span>
+      <span class="tl-v2-dur">${durStr}</span>
+      <div class="tl-v2-actions">
+        <button class="tl-action-btn" onclick="event.stopPropagation();editSessionById('${record.id}')">✏️</button>
+        <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${record.id}')">🗑</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderGap(minutes) {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  const text = h > 0 ? `闲置 · ${h}小时${m > 0 ? m + '分' : ''}` : `闲置 · ${m}分`;
+  return `<div class="tl-v2-gap"><span class="tl-v2-gap-dot"></span>${text}</div>`;
+}
+
+function renderNowLine() {
+  return `<div class="tl-v2-now"><div class="tl-v2-now-line"><span class="tl-v2-now-label">NOW</span></div></div>`;
+}
+
+// ========== RENDER ==========
+function renderAll() {
+  cleanupExpiredPlans();
+  renderApp();
+  if(showEditModal) renderModal();
+  if(activeRecord && currentMode==='record'){
+    removeAlertUI();
+    const elapsed=Math.floor((Date.now()-new Date(activeRecord.start).getTime())/60000);
+    if(activeRecord.category==='entertainment'&&elapsed>=ENTERTAINMENT_ALERT_MIN) setTimeout(updateAlertUI,50);
+  }
+}
+
+function renderApp() {
+  const app=document.getElementById('app');
+  const now=new Date();
+  const weekdays=['日','一','二','三','四','五','六'];
+  const {planStats,recordStats,planTotal,recordTotal}=getTodayStats();
+
+  let catDurations={};
+  for(const k of Object.keys(RECORD_CATEGORIES)) catDurations[k]=recordStats[k]||0;
+  if(activeRecord){
+    const elapsed=Math.floor((Date.now()-new Date(activeRecord.start).getTime())/60000);
+    catDurations[activeRecord.category]=(catDurations[activeRecord.category]||0)+elapsed;
+  }
+
+  let html='';
+
+  // Header + sync indicator
+  html+=`<div class="header">
+    <div class="date">${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日</div>
+    <div class="weekday">星期${weekdays[now.getDay()]}</div>
+    <div class="sync-indicator ${getSyncUrl()?'synced':'offline'}" id="sync-dot" onclick="currentTab='settings';switchTab('settings');renderAll()">
+      <span class="dot"></span> <span>${getSyncUrl()?'已同步':'未设置同步'}</span>
+    </div>
+  </div>`;
+
+  // Mode toggle
+  html+=`<div class="mode-toggle">
+    <button class="mode-btn ${currentMode==='plan'?'active':''}" onclick="currentMode='plan';renderAll()">📋 计划</button>
+    <button class="mode-btn ${currentMode==='record'?'active':''}" onclick="currentMode='record';renderAll()">⏱ 记录</button>
+  </div>`;
+
+  // === PLAN MODE ===
+  if(currentMode==='plan'){
+    if(activePlan){
+      const cat=PLAN_CATEGORIES[activePlan.category];
+      const remaining=getActivePlanRemaining();
+      const pct=Math.min(100,Math.round((PLAN_DURATION_MIN-remaining)/PLAN_DURATION_MIN*100));
+      html+=`<div class="status-card active" style="border-color:${cat.color}">
+        <div class="status-label">📋 当前计划</div>
+        <div class="status-main" style="color:${cat.color}">${cat.icon} ${cat.name}</div>
+        <div class="status-time">${fmtTime(activePlan.start)} – ${fmtTime(activePlan.end)} ・ 剩余 ${fmtDuration(remaining)}</div>
+        <div class="status-bar"><div class="status-bar-fill" style="width:${pct}%;background:${cat.color}"></div></div>
+        <button class="stop-btn" onclick="stopPlan()">结束当前计划</button>
+      </div>`;
+    }else{
+      html+=`<div class="status-card empty">
+        <div class="status-label">📋 计划模式</div>
+        <div class="status-main">选择分类开始 1 小时计划</div>
+      </div>`;
+    }
+    html+=`<div class="category-grid">`;
+    for(const[key,cat] of Object.entries(PLAN_CATEGORIES)){
+      const isActive=activePlan&&activePlan.category===key;
+      html+=`<button class="cat-btn ${key}${isActive?' active':''}" onclick="startPlan('${key}')">
+        <span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.name}</span>
+      </button>`;
+    }
+    html+=`</div>`;
+    html+=`<div style="text-align:center;font-size:12px;color:var(--text-muted);margin-bottom:16px">固定 1 小时 · 不可编辑 · 新计划自动截断上一个</div>`;
+  }
+
+  // === RECORD MODE ===
+  if(currentMode==='record'){
+    if(activeRecord){
+      const cat=RECORD_CATEGORIES[activeRecord.category];
+      const elapsed=Math.floor((Date.now()-recordStartTime)/1000);
+      const h=Math.floor(elapsed/3600),m=Math.floor((elapsed%3600)/60),s=elapsed%60;
+      html+=`<div class="status-card active" style="border-color:${cat.color}">
+        <div class="status-label">⏱ 正在记录</div>
+        <div class="status-main" style="font-size:44px;font-weight:700;letter-spacing:-1px" id="record-timer">${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</div>
+        <div class="status-time" style="color:${cat.color};font-weight:600">${cat.icon} ${cat.name}</div>
+        <button class="stop-btn" onclick="endRecord();renderAll()">⏹ 停止记录</button>
+      </div>`;
+    }else{
+      html+=`<div class="status-card empty">
+        <div class="status-label">⏱ 记录模式</div>
+        <div class="status-main">选择分类开始记录</div>
+      </div>`;
+    }
+    html+=`<div class="category-grid">`;
+    for(const[key,cat] of Object.entries(RECORD_CATEGORIES)){
+      const isActive=activeRecord&&activeRecord.category===key;
+      let cls=`cat-btn ${key}${isActive?' active':''}`;
+      if(key==='entertainment'&&isActive&&activeRecord){
+        const elapsed=Math.floor((Date.now()-new Date(activeRecord.start).getTime())/60000);
+        if(elapsed>=ENTERTAINMENT_ALERT_MIN) cls+=' alerting';
+      }
+      const durStr=catDurations[key]>0?fmtDuration(catDurations[key]):'';
+      html+=`<button class="${cls}" onclick="${isActive?'endRecord();renderAll()':`startRecord('${key}')`}">
+        <span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.name}</span>
+        ${durStr?`<span style="display:block;font-size:11px;color:var(--text-muted);margin-top:2px">${durStr}</span>`:''}
+      </button>`;
+    }
+    html+=`</div>`;
+    if(activeRecord&&activeRecord.category==='entertainment'){
+      html+=`<div style="text-align:center;font-size:12px;color:var(--entertainment);margin-bottom:16px">消遣超过 20 分钟会触发提醒</div>`;
+    }
+  }
+
+  // Tabs
+  html+=`<div class="tabs">
+    <button class="tab-btn ${currentTab==='timeline'?'active':''}" onclick="switchTab('timeline')">时间线</button>
+    <button class="tab-btn ${currentTab==='stats'?'active':''}" onclick="switchTab('stats')">统计</button>
+    <button class="tab-btn ${currentTab==='settings'?'active':''}" onclick="switchTab('settings')">设置</button>
+  </div>`;
+
+  // === TIMELINE V2 — Vertical Overlay ===
+  html+=`<div class="tab-panel ${currentTab==='timeline'?'active':''}" id="panel-timeline">`;
+  const blocks = buildTimelineBlocks();
+  if (blocks.length === 0) {
+    html+=`<div class="empty-state"><div class="empty-icon">📋</div><div>今天还没有记录</div><div class="empty-sub">计划或记录一条来开始</div></div>`;
+  } else {
+    html+=`<div class="timeline-v2">`;
+    const nowTime = new Date();
+    let prevEnd = null;
+    let nowInserted = false;
+    let lastHour = -1;
+
+    for (let i = 0; i < blocks.length; i++) {
+      const block = blocks[i];
+      const blockStart = getBlockStartTime(block);
+      const blockEnd = getBlockEndTime(block);
+
+      // Gap before this block
+      if (prevEnd && blockStart > prevEnd) {
+        const gapMin = Math.round((blockStart - prevEnd) / 60000);
+        if (gapMin >= 3) {
+          if (!nowInserted && nowTime > prevEnd && nowTime <= blockStart) {
+            html += renderNowLine();
+            nowInserted = true;
+          }
+          html += renderGap(gapMin);
+        }
+      }
+
+      // NOW line before this block (if it starts after now)
+      if (!nowInserted && prevEnd && nowTime <= blockStart && nowTime > prevEnd) {
+        html += renderNowLine();
+        nowInserted = true;
+      }
+
+      // Hour marker
+      const blockHour = blockStart.getHours();
+      if (blockHour !== lastHour) {
+        html += `<div class="tl-v2-hour">${String(blockHour).padStart(2,'0')}:00</div>`;
+        lastHour = blockHour;
+      }
+
+      html += renderTimelineBlock(block, nowTime);
+      prevEnd = blockEnd;
+    }
+
+    // NOW after all blocks
+    if (!nowInserted) {
+      html += renderNowLine();
+    }
+
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+
+  // === STATS ===
+  html+=`<div class="tab-panel ${currentTab==='stats'?'active':''}" id="panel-stats">`;
+  const displayRecordStats={...recordStats};
+  if(activeRecord){
+    const elapsed=Math.floor((Date.now()-new Date(activeRecord.start).getTime())/60000);
+    displayRecordStats[activeRecord.category]=(displayRecordStats[activeRecord.category]||0)+elapsed;
+  }
+  const realRecordTotal=Object.values(displayRecordStats).reduce((a,b)=>a+b,0);
+  const hasAnyData=realRecordTotal>0||planTotal>0;
+  if(!hasAnyData){
+    html+=`<div class="empty-state"><div class="empty-icon">📊</div><div>还没有数据</div></div>`;
+  }else{
+    if(planTotal>0){
+      html+=`<div class="stats-section"><h3>📋 今日计划</h3><div class="stats-summary">`;
+      for(const[key,cat]of Object.entries(PLAN_CATEGORIES)){
+        const dur=planStats[key]||0;
+        const pct=planTotal>0?Math.round(dur/planTotal*100):0;
+        html+=`<div class="stat-card" style="border-top:3px solid ${cat.color}">
+          <div class="stat-cat">${cat.icon} ${cat.name}</div>
+          <div class="stat-val" style="color:${cat.color}">${fmtDuration(dur)}</div>
+          <div class="stat-pct">${pct}%</div></div>`;
+      }
+      html+=`</div></div>`;
+    }
+    if(realRecordTotal>0){
+      html+=`<div class="stats-section"><h3>⏱ 今日记录</h3><div class="stats-summary">`;
+      for(const[key,cat]of Object.entries(RECORD_CATEGORIES)){
+        const dur=displayRecordStats[key]||0;
+        if(dur===0&&key==='unrecorded') continue;
+        const pct=realRecordTotal>0?Math.round(dur/realRecordTotal*100):0;
+        html+=`<div class="stat-card" style="border-top:3px solid ${cat.color}">
+          <div class="stat-cat">${cat.icon} ${cat.name}</div>
+          <div class="stat-val" style="color:${cat.color}">${fmtDuration(dur)}</div>
+          <div class="stat-pct">${pct}%</div></div>`;
+      }
+      html+=`</div>`;
+      html+=`<div class="bar-chart">`;
+      for(const[key,cat]of Object.entries(RECORD_CATEGORIES)){
+        const dur=displayRecordStats[key]||0;
+        if(dur===0&&key==='unrecorded') continue;
+        const pct=Math.max(1,Math.round(dur/realRecordTotal*100));
+        html+=`<div class="bar-row">
+          <div class="bar-label">${cat.icon} ${cat.name}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${cat.color}"></div></div>
+          <div class="bar-val">${fmtDuration(dur)}</div></div>`;
+      }
+      html+=`</div></div>`;
+    }
+    if(planTotal>0&&realRecordTotal>0){
+      html+=`<div class="stats-section plan-vs-record"><h3>📋 计划 vs ⏱ 实际</h3>`;
+      for(const[key,cat]of Object.entries(PLAN_CATEGORIES)){
+        const planDur=planStats[key]||0, recordDur=displayRecordStats[key]||0;
+        const maxDur=Math.max(planDur,recordDur,1);
+        html+=`<div class="pvr-row">
+          <div class="pvr-label">${cat.icon} ${cat.name}</div>
+          <div class="pvr-bars">
+            <div class="pvr-track"><div class="pvr-fill" style="width:${Math.round(planDur/maxDur*100)}%;background:${cat.color};opacity:0.3"></div></div>
+            <div class="pvr-track"><div class="pvr-fill" style="width:${Math.round(recordDur/maxDur*100)}%;background:${cat.color}"></div></div>
+          </div>
+          <div class="pvr-val">${fmtDuration(planDur)} / ${fmtDuration(recordDur)}</div></div>`;
+      }
+      html+=`</div>`;
+    }
+  }
+  html+=`</div>`;
+
+  // === SETTINGS ===
+  html+=`<div class="tab-panel ${currentTab==='settings'?'active':''}" id="panel-settings">`;
+
+  // Sync settings
+  const syncUrl=getSyncUrl();
+  html+=`<div class="settings-section">
+    <h3>🔄 云同步 (Google Sheets)</h3>`;
+  if(syncUrl){
+    html+=`<p style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">当前同步地址已设置</p>
+    <div class="btn-group">
+      <button class="btn btn-sync" onclick="syncNow()">🔄 立即同步</button>
+      <button class="btn btn-secondary" onclick="setSyncUrl('');renderAll();showToast('已断开同步')">断开</button>
+    </div>`;
+  }else{
+    html+=`<div class="input-row" style="margin-bottom:8px">
+      <input type="url" id="sync-url-input" placeholder="粘贴 Apps Script 网页应用 URL">
+      <button class="btn btn-primary" onclick="saveSyncUrl()">保存</button>
+    </div>
+    <div class="hint">
+      1. 打开 <a href="https://sheets.google.com" target="_blank">Google Sheets</a>，新建一张表<br>
+      2. 扩展程序 → Apps Script，粘贴 <code>sync-backend.gs</code> 的代码<br>
+      3. 部署为网页应用（执行身份：我，访问权限：任何人）<br>
+      4. 复制部署 URL，粘贴到上方
+    </div>`;
+  }
+  html+=`</div>`;
+
+  // Sound test
+  html+=`<div class="settings-section">
+    <h3>🔔 试听提醒音</h3>
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="playChime()">📱 消遣提醒</button>
+      <button class="btn btn-secondary" onclick="playPlanChime()">⏰ 计划到期</button>
+    </div>
+    <div class="hint">浏览器会播放两种提醒音，手机端还会震动</div>
+  </div>`;
+
+  // Data management
+  html+=`<div class="settings-section">
+    <h3>数据管理</h3>
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="exportData()">📤 导出</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">📥 导入</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="btn btn-secondary" style="color:var(--entertainment)" onclick="if(confirm('确定清空所有数据？')){data={sessions:[]};activePlan=null;activeRecord=null;recordStartTime=null;saveDataAndSync();renderAll();showToast('已清空')}">🗑 清空</button>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <h3>使用说明</h3>
+    <p style="font-size:13px;color:var(--text-muted);line-height:1.8">
+      <strong>计划</strong>：固定 1 小时，不可编辑，用来事先规划。<br>
+      <strong>记录</strong>：灵活计时，可事后编辑，追踪实际时间去向。<br>
+      <strong>消遣提醒</strong>：记录模式下消遣超 20 分钟变色 + 铃声。<br>
+      <strong>未记录</strong>：编辑时可选的分类，标记无明确归类的时段。<br>
+      数据默认存浏览器本地，设置同步后自动存取 Google Sheets。
+    </p>
+  </div>`;
+  html+=`</div>`;
+
+  app.innerHTML=html;
+}
+
+function saveSyncUrl() {
+  const input = document.getElementById('sync-url-input');
+  const url = input.value.trim();
+  if (!url) { showToast('请输入 URL'); return; }
+  setSyncUrl(url);
+  updateSyncStatus('synced');
+  renderAll();
+  showToast('同步地址已保存，正在拉取数据…');
+  pullAndMerge();
+}
+
+async function syncNow() {
+  updateSyncStatus('syncing');
+  const ok = await pushToCloud(data);
+  updateSyncStatus(ok ? 'synced' : 'error');
+  showToast(ok ? '同步成功' : '同步失败，请检查网络');
+}
+
+function restoreActiveFromData() {
+  // Detect active record: today's record session with no end time
+  if (!activeRecord) {
+    const running = data.sessions.find(s => s.type === 'record' && !s.end && isToday(s.start));
+    if (running) {
+      activeRecord = running;
+      recordStartTime = new Date(running.start).getTime();
+      startRecordTimer(running);
+    }
+  }
+  // Detect active plan: today's plan session whose end is still in the future
+  if (!activePlan) {
+    const now = new Date();
+    const plans = data.sessions.filter(s => s.type === 'plan' && isToday(s.start) && new Date(s.end) > now);
+    // Take the latest one (most recent start)
+    if (plans.length > 0) {
+      activePlan = plans.reduce((a, b) => new Date(a.start) > new Date(b.start) ? a : b);
+    }
+  }
+  persistState();
+}
+
+async function pullAndMerge() {
+  const cloudData = await pullFromCloud();
+  if (!cloudData) { updateSyncStatus('error'); return; }
+  // Merge: cloud sessions + local sessions that aren't in cloud
+  const cloudIds = new Set(cloudData.sessions.map(s=>s.id));
+  const localOnly = data.sessions.filter(s=>!cloudIds.has(s.id));
+  data.sessions = [...cloudData.sessions, ...localOnly];
+  saveLocal(data);
+  restoreActiveFromData();
+  updateSyncStatus('synced');
+  renderAll();
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active',(i===0&&tab==='timeline')||(i===1&&tab==='stats')||(i===2&&tab==='settings'));
+  });
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  const panel=document.getElementById(`panel-${tab}`);
+  if(panel) panel.classList.add('active');
+}
+
+// ========== MODAL ==========
+function renderModal() {
+  const root=document.getElementById('modal-root');
+  if(!showEditModal||!editingSession){root.innerHTML='';return;}
+  const s=editingSession;
+  const cats=RECORD_CATEGORIES;
+  const startDate=new Date(s.start), endDate=s.end?new Date(s.end):new Date();
+  const fmt=d=>{const y=d.getFullYear(),mo=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'),h=String(d.getHours()).padStart(2,'0'),mi=String(d.getMinutes()).padStart(2,'0');return`${y}-${mo}-${day}T${h}:${mi}`;};
+  root.innerHTML=`<div class="modal-overlay" onclick="if(event.target===this){showEditModal=false;editingSession=null;renderAll()}">
+    <div class="modal-sheet"><h3>编辑记录</h3>
+      <div class="form-group"><label>分类</label><select id="edit-category">${Object.entries(cats).map(([k,c])=>`<option value="${k}"${k===s.category?' selected':''}>${c.icon} ${c.name}</option>`).join('')}</select></div>
+      <div class="form-group"><label>开始时间</label><input type="datetime-local" id="edit-start" value="${fmt(startDate)}"></div>
+      <div class="form-group"><label>结束时间</label><input type="datetime-local" id="edit-end" value="${fmt(endDate)}"></div>
+      <div class="btn-group" style="justify-content:space-between">
+        <button class="btn btn-secondary" onclick="deleteSession('${s.id}');showToast('已删除')">🗑 删除</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" onclick="showEditModal=false;editingSession=null;renderAll()">取消</button>
+          <button class="btn btn-primary" onclick="saveEdit()">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function saveEdit() {
+  if(!editingSession) return;
+  const category=document.getElementById('edit-category').value;
+  const start=new Date(document.getElementById('edit-start').value).toISOString();
+  const end=new Date(document.getElementById('edit-end').value).toISOString();
+  if(new Date(end)<=new Date(start)){showToast('结束时间必须晚于开始时间');return;}
+  updateSession(editingSession.id,{category,start,end});
+  showToast('已更新');
+}
+
+// ========== EXPORT / IMPORT ==========
+function exportData() {
+  const json=JSON.stringify(data,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`时间知觉_${todayStr()}.json`;a.click();
+  URL.revokeObjectURL(url);showToast('已导出');
+}
+function importData(event) {
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const imported=JSON.parse(e.target.result);
+      if(!imported.sessions||!Array.isArray(imported.sessions)) throw new Error('invalid');
+      if(confirm(`导入 ${imported.sessions.length} 条记录，合并到现有数据？`)){
+        const existingIds=new Set(data.sessions.map(s=>s.id));
+        data.sessions=[...data.sessions,...imported.sessions.filter(s=>!existingIds.has(s.id))];
+        saveDataAndSync();renderAll();showToast(`导入 ${imported.sessions.filter(s=>!existingIds.has(s.id)).length} 条`);
+      }
+    }catch(err){showToast('文件格式不正确');}
+  };
+  reader.readAsText(file);event.target.value='';
+}
+
+function showToast(msg) {
+  const el=document.createElement('div');el.className='toast';el.textContent=msg;
+  document.getElementById('toast-root').appendChild(el);
+  setTimeout(()=>el.remove(),2200);
+}
+
+// ========== INIT ==========
+async function init() {
+  // Load local data first (fast)
+  data = loadLocal();
+
+  // Restore state
+  if(activeRecord){
+    const session=data.sessions.find(s=>s.id===activeRecord.id);
+    if(session&&!session.end){
+      activeRecord=session;
+      recordStartTime=new Date(session.start).getTime();
+      startRecordTimer(session);
+      const elapsed=Math.floor((Date.now()-recordStartTime)/60000);
+      if(session.category==='entertainment'&&elapsed>=ENTERTAINMENT_ALERT_MIN) alertTriggered[session.id]=true;
+    }else{activeRecord=null;recordStartTime=null;persistState();}
+  }
+  if(activePlan){
+    const session=data.sessions.find(s=>s.id===activePlan.id);
+    if(!session||new Date(session.end)<=new Date()){activePlan=null;persistState();}
+  }
+
+  // Data integrity
+  let dirty=false;
+  for(const s of data.sessions){
+    if(!s.type){s.type='record';dirty=true;}
+    if(!s.end&&s.type==='plan'){s.end=s.start;dirty=true;}
+    if(!s.end&&s.type==='record'&&(!activeRecord||s.id!==activeRecord.id)){s.end=s.start;dirty=true;}
+  }
+  if(dirty) saveLocal(data);
+
+  renderAll();
+
+  // Try to pull from cloud in background
+  if(getSyncUrl()){
+    updateSyncStatus('syncing');
+    const cloudData = await pullFromCloud();
+    if(cloudData){
+      const cloudIds=new Set(cloudData.sessions.map(s=>s.id));
+      const localOnly=data.sessions.filter(s=>!cloudIds.has(s.id));
+      data.sessions=[...cloudData.sessions,...localOnly];
+      saveLocal(data);
+      restoreActiveFromData();
+      updateSyncStatus('synced');
+      renderAll();
+    }else{
+      updateSyncStatus('error');
+    }
+  }
+
+  setInterval(()=>{if(activeRecord)updateRecordDisplay();cleanupExpiredPlans();},1000);
+}
+
+// Push on page close to avoid losing data between devices
+window.addEventListener('beforeunload', () => {
+  if (getSyncUrl()) {
+    navigator.sendBeacon(getSyncUrl(), JSON.stringify(data));
+  }
+});
+
+// Also attempt push when page becomes hidden (switching tabs, locking phone)
+window.addEventListener('visibilitychange', () => {
+  if (document.hidden && getSyncUrl()) {
+    navigator.sendBeacon(getSyncUrl(), JSON.stringify(data));
+  }
+});
+
+init();
+</script>
+</body>
+</html>
