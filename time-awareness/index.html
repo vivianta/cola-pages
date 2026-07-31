@@ -320,7 +320,7 @@ async function pushToCloud(data) {
   try {
     const resp = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(data),
       signal: AbortSignal.timeout(5000),
     });
