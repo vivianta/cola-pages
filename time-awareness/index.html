@@ -1251,25 +1251,7 @@ function renderApp() {
   const isTodayView = isSameDate(selectedDate, todayStr());
   let html='';
 
-  // Date navigation
-  html+=`<div class="date-nav">
-    <button class="nav-arrow" onclick="goPrevPeriod()">←</button>
-    <div class="date-center" onclick="showCalendar=true;calMonth=new Date(selectedDate+'T00:00:00');renderAll()">
-      <div class="date-full">${fmtDateFull(selectedDate)}</div>
-      <div class="date-weekday">周${getWeekday(selectedDate)}</div>
-    </div>
-    <button class="nav-arrow" onclick="goNextPeriod()">→</button>
-    <button class="today-btn ${isTodayView?'is-today':''}" onclick="selectedDate=todayStr();renderAll()">今天</button>
-  </div>`;
-
-  // Sync indicator
-  html+=`<div style="text-align:center;margin-bottom:10px">
-    <div class="sync-indicator ${getSyncUrl()?'synced':'offline'}" id="sync-dot" onclick="currentTab='settings';switchTab('settings');renderAll()">
-      <span class="dot"></span> <span>${getSyncUrl()?'已同步':'未设置同步'}</span>
-    </div>
-  </div>`;
-
-  // Calendar overlay
+  // Calendar overlay (global)
   if(showCalendar){
     html+=renderCalendar();
   }
@@ -1357,6 +1339,17 @@ function renderApp() {
 
   // === TIMELINE V2 — Vertical Overlay ===
   html+=`<div class="tab-panel ${currentTab==='timeline'?'active':''}" id="panel-timeline">`;
+
+  // Date nav inside timeline
+  html+=`<div class="date-nav">
+    <button class="nav-arrow" onclick="goPrevPeriod()">←</button>
+    <div class="date-center" onclick="showCalendar=true;calMonth=new Date(selectedDate+'T00:00:00');renderAll()">
+      <div class="date-full">${fmtDateFull(selectedDate)}</div>
+      <div class="date-weekday">周${getWeekday(selectedDate)}</div>
+    </div>
+    <button class="nav-arrow" onclick="goNextPeriod()">→</button>
+    <button class="today-btn ${isTodayView?'is-today':''}" onclick="selectedDate=todayStr();renderAll()">今天</button>
+  </div>`;
 
   // 7-day strip inside timeline
   (()=>{
@@ -1447,6 +1440,17 @@ function renderApp() {
 
   // === STATS V3 ===
   html+=`<div class="tab-panel ${currentTab==='stats'?'active':''}" id="panel-stats">`;
+
+  // Date nav inside stats
+  html+=`<div class="date-nav">
+    <button class="nav-arrow" onclick="goPrevPeriod()">←</button>
+    <div class="date-center" onclick="showCalendar=true;calMonth=new Date(selectedDate+'T00:00:00');renderAll()">
+      <div class="date-full">${fmtDateFull(selectedDate)}</div>
+      <div class="date-weekday">周${getWeekday(selectedDate)}</div>
+    </div>
+    <button class="nav-arrow" onclick="goNextPeriod()">→</button>
+    <button class="today-btn ${isTodayView?'is-today':''}" onclick="selectedDate=todayStr();renderAll()">今天</button>
+  </div>`;
 
   // Granularity tabs
   html+=`<div class="granularity-tabs">
