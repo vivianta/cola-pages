@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>统计页 v3 原型 — 多日视图</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f8f9fa; padding:20px; color:#333; }
+  .container { max-width:440px; margin:0 auto; }
+  h2 { font-size:18px; margin-bottom:4px; }
+  .subtitle { font-size:13px; color:#9ca3af; margin-bottom:20px; }
+
+  /* Period toggle */
+  .period-toggle { display:flex; background:#f3f4f6; border-radius:10px; padding:3px; margin-bottom:20px; }
+  .period-btn { flex:1; text-align:center; padding:8px 0; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; color:#6b7280; border:none; background:transparent; }
+  .period-btn.active { background:#fff; color:#333; font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+
+  /* Week bar chart */
+  .week-chart { background:#fff; border-radius:16px; padding:20px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  .week-chart h3 { font-size:14px; font-weight:600; margin-bottom:16px; }
+  .bar-group { display:flex; align-items:flex-end; gap:6px; height:120px; padding-top:16px; }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; position:relative; }
+  .bar-col .bar-stack { width:100%; max-width:34px; border-radius:4px 4px 0 0; display:flex; flex-direction:column-reverse; overflow:hidden; }
+  .bar-col .bar-seg { width:100%; }
+  .bar-col .label { font-size:10px; color:#9ca3af; margin-top:4px; }
+  .bar-col .val { font-size:9px; color:#d1d5db; }
+  .bar-col.highlight .label { color:#4A90D9; font-weight:700; }
+  .bar-col .target-line { position:absolute; width:120%; left:-10%; border-top:1px dashed #9ca3af; }
+  .bar-col .target-line::after { content:'目标 6h'; position:absolute; right:0; top:-14px; font-size:9px; color:#9ca3af; white-space:nowrap; }
+
+  /* Summary grid */
+  .summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .summary-card { background:#fff; border-radius:12px; padding:14px; box-shadow:0 1px 2px rgba(0,0,0,.03); }
+  .summary-card .label { font-size:11px; color:#9ca3af; margin-bottom:4px; }
+  .summary-card .value { font-size:22px; font-weight:700; }
+  .summary-card .sub { font-size:11px; color:#9ca3af; margin-top:2px; }
+  .summary-card .trend { font-size:12px; }
+  .trend.up { color:#4CAF84; }
+  .trend.down { color:#E0687A; }
+
+  /* Category breakdown */
+  .cat-breakdown { background:#fff; border-radius:16px; padding:20px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  .cat-breakdown h3 { font-size:14px; font-weight:600; margin-bottom:12px; }
+  .cat-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f5f5f5; }
+  .cat-row:last-child { border-bottom:none; }
+  .cat-row .icon { font-size:20px; }
+  .cat-row .info { flex:1; }
+  .cat-row .cat-name { font-size:13px; font-weight:600; }
+  .cat-row .cat-detail { font-size:11px; color:#9ca3af; }
+  .cat-row .cat-val { font-size:14px; font-weight:700; text-align:right; }
+  .cat-row .cat-pct { font-size:11px; color:#9ca3af; text-align:right; }
+  .bar-wrap { width:80px; flex-shrink:0; }
+  .bar-track { height:5px; background:#f3f4f6; border-radius:3px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:3px; }
+
+  /* Trend indicator */
+  .week-trend { display:flex; align-items:center; gap:6px; font-size:12px; margin-top:4px; }
+  .sparkline { display:flex; align-items:flex-end; gap:2px; height:16px; }
+  .spark { width:3px; border-radius:1px; }
+
+  .divider { height:1px; background:#f3f4f6; margin:12px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>📊 统计</h2>
+  <div class="subtitle">本周 · 07.28 – 08.03</div>
+
+  <!-- Period toggle -->
+  <div class="period-toggle">
+    <button class="period-btn active">周</button>
+    <button class="period-btn">月</button>
+    <button class="period-btn">年</button>
+  </div>
+
+  <!-- Week chart: stacked bars per day -->
+  <div class="week-chart">
+    <h3>每日时间分布</h3>
+    <div class="bar-group">
+      <div class="bar-col">
+        <div class="bar-stack" style="height:72px;">
+          <div class="bar-seg" style="height:24px;background:#4A90D9"></div>
+          <div class="bar-seg" style="height:16px;background:#F09B4A"></div>
+          <div class="bar-seg" style="height:12px;background:#8B7EC8"></div>
+          <div class="bar-seg" style="height:20px;background:#E0687A"></div>
+        </div>
+        <div class="label">周一</div>
+        <div class="val">7.2h</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-stack" style="height:56px;">
+          <div class="bar-seg" style="height:20px;background:#4A90D9"></div>
+          <div class="bar-seg" style="height:10px;background:#F09B4A"></div>
+          <div class="bar-seg" style="height:26px;background:#E0687A"></div>
+        </div>
+        <div class="label">周二</div>
+        <div class="val">5.6h</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-stack" style="height:80px;">
+          <div class="bar-seg" style="height:18px;background:#4A90D9"></div>
+          <div class="bar-seg" style="height:14px;background:#F09B4A"></div>
+          <div class="bar-seg" style="height:48px;background:#E0687A"></div>
+        </div>
+        <div class="label">周三</div>
+        <div class="val">8.1h</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-stack" style="height:4px;">
+          <div class="bar-seg" style="height:4px;background:#e5e7eb"></div>
+        </div>
+        <div class="label">周四</div>
+        <div class="val">—</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-stack" style="height:64px;">
+          <div class="bar-seg" style="height:28px;background:#4CAF84"></div>
+          <div class="bar-seg" style="height:20px;background:#F09B4A"></div>
+          <div class="bar-seg" style="height:16px;background:#E0687A"></div>
+        </div>
+        <div class="label">周五</div>
+        <div class="val">6.4h</div>
+      </div>
+      <div class="bar-col">
+        <div class="bar-stack" style="height:40px;">
+          <div class="bar-seg" style="height:30px;background:#F09B4A"></div>
+          <div class="bar-seg" style="height:10px;background:#E0687A"></div>
+        </div>
+        <div class="label">周六</div>
+        <div class="val">4.0h</div>
+      </div>
+      <div class="bar-col highlight">
+        <div class="target-line" style="bottom:60px;"></div>
+        <div class="bar-stack" style="height:31px;">
+          <div class="bar-seg" style="height:31px;background:#4A90D9"></div>
+        </div>
+        <div class="label">周日</div>
+        <div class="val">3.1h</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary numbers -->
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="label">周总记录</div>
+      <div class="value">34.4h</div>
+      <div class="trend down">↓ 12% vs 上周</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">日均</div>
+      <div class="value">4.9h</div>
+      <div class="sub">工作日 6.5h · 周末 3.6h</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">计划覆盖率</div>
+      <div class="value" style="color:#F09B4A">68%</div>
+      <div class="trend down">↓ 5% vs 上周</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">消遣占比</div>
+      <div class="value" style="color:#E0687A">28%</div>
+      <div class="trend up">↑ 8% vs 上周 ⚠</div>
+    </div>
+  </div>
+
+  <!-- Category breakdown for the week -->
+  <div class="cat-breakdown">
+    <h3>分类汇总 · 本周</h3>
+    <div class="cat-row">
+      <span class="icon">💼</span>
+      <div class="info">
+        <div class="cat-name">工作/学习</div>
+        <div class="cat-detail">日均 2.1h · 最佳日 周三 3.2h</div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-track"><div class="bar-fill" style="width:60%;background:#4A90D9"></div></div>
+      </div>
+      <div class="cat-val" style="color:#4A90D9">14.7h</div>
+    </div>
+    <div class="cat-row">
+      <span class="icon">🏠</span>
+      <div class="info">
+        <div class="cat-name">家务</div>
+        <div class="cat-detail">日均 0.5h</div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-track"><div class="bar-fill" style="width:14%;background:#4CAF84"></div></div>
+      </div>
+      <div class="cat-val" style="color:#4CAF84">3.5h</div>
+    </div>
+    <div class="cat-row">
+      <span class="icon">🏃</span>
+      <div class="info">
+        <div class="cat-name">锻炼</div>
+        <div class="cat-detail">日均 0.7h · 5/7 天有记录</div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-track"><div class="bar-fill" style="width:21%;background:#F09B4A"></div></div>
+      </div>
+      <div class="cat-val" style="color:#F09B4A">5.2h</div>
+    </div>
+    <div class="cat-row">
+      <span class="icon">📱</span>
+      <div class="info">
+        <div class="cat-name">消遣</div>
+        <div class="cat-detail">日均 1.4h · 周三最多 4.8h ⚠</div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-track"><div class="bar-fill" style="width:40%;background:#E0687A"></div></div>
+      </div>
+      <div class="cat-val" style="color:#E0687A">9.8h</div>
+    </div>
+  </div>
+
+  <div style="font-size:12px;text-align:center;color:#9ca3af;padding:16px 0;">
+    点 ← → 切换周 · 点「月」看月度聚合 · 点某天柱子看那天详情
+  </div>
+</div>
+</body>
+</html>

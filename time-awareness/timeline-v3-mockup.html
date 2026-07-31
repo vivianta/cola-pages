@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>时间线 v3 原型 — 日期导航 + 7天热度</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f8f9fa; padding:20px; color:#333; }
+  .container { max-width:440px; margin:0 auto; }
+  h2 { font-size:18px; margin-bottom:4px; }
+
+  /* Date nav */
+  .date-nav { display:flex; align-items:center; justify-content:center; gap:16px; padding:8px 0 12px; }
+  .date-nav .arrow { width:32px; height:32px; border-radius:50%; border:1px solid #e5e7eb; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; color:#6b7280; }
+  .date-nav .date-text { font-size:18px; font-weight:700; cursor:pointer; padding:4px 12px; border-radius:8px; }
+  .date-nav .date-text:hover { background:#f3f4f6; }
+  .date-nav .today-btn { font-size:12px; color:#4A90D9; cursor:pointer; padding:2px 8px; border-radius:4px; }
+  .date-nav .today-btn:hover { background:#f0f4ff; }
+
+  /* 7-day bars */
+  .week-bars { display:flex; align-items:flex-end; gap:6px; padding:12px 16px; margin-bottom:16px; background:#fff; border-radius:12px; height:72px; box-shadow:0 1px 3px rgba(0,0,0,.03); }
+  .day-bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
+  .day-bar-col .bar { width:100%; max-width:36px; border-radius:4px 4px 0 0; min-height:4px; transition:background .2s; }
+  .day-bar-col .label { font-size:10px; color:#9ca3af; }
+  .day-bar-col .dur { font-size:9px; color:#d1d5db; }
+  .day-bar-col.active .bar { border:2px solid #333; border-bottom:none; }
+  .day-bar-col.active .label { color:#333; font-weight:600; }
+  .day-bar-col.active .dur { color:#6b7280; }
+  .day-bar-col.today .label { color:#4A90D9; font-weight:700; }
+  .day-bar-col.today .dur { color:#4A90D9; }
+  .day-bar-col.empty .bar { background:#f3f4f6 !important; }
+
+  /* summary line */
+  .week-summary { font-size:12px; color:#9ca3af; padding:0 4px 8px; display:flex; justify-content:space-between; }
+  .week-summary .total { font-weight:600; color:#6b7280; }
+
+  /* Timeline (v2 style, compact) */
+  .timeline { position:relative; padding-left:48px; }
+  .time-axis { position:absolute; left:0; top:0; bottom:0; width:40px; }
+  .time-line { position:absolute; left:36px; top:0; bottom:0; width:2px; background:#e5e7eb; }
+  .block { position:relative; margin-bottom:6px; border-radius:10px; overflow:visible; }
+  .block .plan { border-radius:10px; padding:8px 12px; border:2px dashed #c4d4f0; background:#f0f4ff; font-size:12px; color:#7b8ba8; display:flex; align-items:center; gap:6px; }
+  .block .actual { position:absolute; top:3px; left:3px; right:3px; border-radius:8px; padding:8px 12px; background:#4A90D9; color:#fff; font-size:12px; display:flex; align-items:center; gap:6px; box-shadow:0 1px 4px rgba(0,0,0,.15); }
+  .block .time { margin-left:auto; opacity:.75; font-size:11px; }
+  .gap { margin-bottom:6px; padding:4px 12px; border-radius:6px; background:#fafafa; border:1px dashed #eee; font-size:11px; color:#d1d5db; }
+
+  .note { margin-top:16px; font-size:12px; text-align:center; color:#9ca3af; }
+  .note .highlight { color:#4A90D9; }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Date navigation -->
+  <div class="date-nav">
+    <div class="arrow">←</div>
+    <div class="date-text">2026.07.31 <span style="font-weight:400;font-size:14px;color:#9ca3af;">周五</span></div>
+    <div class="arrow">→</div>
+    <div class="today-btn">今天</div>
+  </div>
+
+  <!-- 7-day heat bars -->
+  <div class="week-bars">
+    <div class="day-bar-col">
+      <div class="bar" style="height:36px;background:#4A90D9;"></div>
+      <div class="label">周一</div>
+      <div class="dur">7.2h</div>
+    </div>
+    <div class="day-bar-col">
+      <div class="bar" style="height:28px;background:#4A90D9;"></div>
+      <div class="label">周二</div>
+      <div class="dur">5.6h</div>
+    </div>
+    <div class="day-bar-col">
+      <div class="bar" style="height:40px;background:#E0687A;"></div>
+      <div class="label">周三</div>
+      <div class="dur">8.1h</div>
+    </div>
+    <div class="day-bar-col empty">
+      <div class="bar" style="height:4px;"></div>
+      <div class="label">周四</div>
+      <div class="dur">—</div>
+    </div>
+    <div class="day-bar-col">
+      <div class="bar" style="height:32px;background:#4A90D9;"></div>
+      <div class="label">周五</div>
+      <div class="dur">6.4h</div>
+    </div>
+    <div class="day-bar-col">
+      <div class="bar" style="height:20px;background:#F09B4A;"></div>
+      <div class="label">周六</div>
+      <div class="dur">4.0h</div>
+    </div>
+    <div class="day-bar-col active today">
+      <div class="bar" style="height:42px;background:#4A90D9;"></div>
+      <div class="label">周日</div>
+      <div class="dur">3.1h</div>
+    </div>
+  </div>
+  <div class="week-summary"><span>本周</span><span class="total">共 34.4h</span></div>
+
+  <!-- Timeline -->
+  <div class="timeline">
+    <div class="time-axis"><div class="time-line"></div></div>
+
+    <div class="gap">闲置 · 1 小时 12 分</div>
+
+    <div class="block" style="min-height:88px;">
+      <div class="plan" style="min-height:82px;">💼 计划：工作 07:00–08:00</div>
+      <div class="actual" style="top:3px;">💼 工作/学习<span class="time">07:00 – 08:12</span></div>
+    </div>
+
+    <div class="gap">闲置 · 36 分</div>
+
+    <div class="block">
+      <div class="actual" style="position:static;border-radius:10px;background:#E0687A;">📱 消遣<span class="time">09:48 – 10:31</span></div>
+    </div>
+
+    <div class="gap">闲置 · 29 分</div>
+
+    <div class="block" style="min-height:80px;">
+      <div class="plan" style="min-height:74px;">💼 计划：工作 11:00–12:00</div>
+      <div class="actual">💼 工作/学习<span class="time">11:00 – 12:01</span></div>
+    </div>
+
+    <div style="height:2px;background:#ef4444;border-radius:1px;position:relative;margin-bottom:6px;">
+      <span style="position:absolute;right:100%;margin-right:6px;top:-7px;font-size:10px;color:#ef4444;font-weight:700;">NOW</span>
+    </div>
+
+    <div class="block">
+      <div class="plan" style="border-color:#d1d5db;background:#f9fafb;color:#9ca3af;">🔋 计划：充电 14:00–15:00</div>
+    </div>
+  </div>
+
+  <div class="note">
+    点<span class="highlight">周几的柱子</span>切换到那天 · 点<span class="highlight">日期</span>弹出日历跳任意天 · 点<span class="highlight">今天</span>回到今天
+  </div>
+</div>
+</body>
+</html>
