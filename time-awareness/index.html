@@ -415,22 +415,80 @@ body {
   50% { box-shadow: 0 2px 18px rgba(0,0,0,0.28); }
 }
 
-/* ===== Dual-column timeline ===== */
-.timeline-dual {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+/* ===== Gantt timeline (3-column: plans | axis | records) ===== */
+.tl-gantt-hdr {
+  display: flex; margin-bottom: 4px; align-items: stretch;
 }
-.tl-dual-left, .tl-dual-right { min-width: 0; }
-.tl-dual-label {
-  font-size: 12px; font-weight: 700; color: var(--text-secondary);
-  text-align: center; padding: 6px 0 10px; letter-spacing: 1px;
+.tl-gantt-hdr-plan, .tl-gantt-hdr-rec {
+  flex: 1; text-align: center; padding: 6px 0; font-size: 13px;
+  font-weight: 600; border-radius: 8px;
 }
-.tl-dual-empty {
-  text-align: center; padding: 30px 10px; font-size: 13px; color: var(--text-muted);
+.tl-gantt-hdr-plan { background: #f0f4ff; color: #7b8ba8; margin-right: 2px; }
+.tl-gantt-hdr-rec  { background: #f0f9f0; color: #6b8a6b; margin-left: 2px; }
+.tl-gantt-hdr-axis { width: 44px; flex-shrink: 0; }
+
+.tl-gantt-wrap { display: flex; position: relative; }
+.tl-gantt-col {
+  flex: 1; position: relative; min-width: 0;
 }
+.tl-gantt-col.plan-col { border-right: 1px solid #e5e7eb; margin-right: 2px; }
+.tl-gantt-col.record-col { border-left: 1px solid #e5e7eb; margin-left: 2px; }
+.tl-gantt-axis {
+  width: 40px; flex-shrink: 0; position: relative;
+}
+.tl-gantt-tick {
+  position: absolute; left: 50%; transform: translate(-50%,-6px);
+  font-size: 9px; color: #9ca3af; white-space: nowrap;
+}
+
+.tl-gantt-block {
+  position: absolute; left: 4px; right: 4px; border-radius: 7px;
+  padding: 6px 8px; font-size: 11px; display: flex; align-items: center;
+  gap: 5px; overflow: hidden; min-height: 36px;
+}
+.tl-gantt-block.plan-block {
+  background: #f0f4ff; border: 1.5px dashed #c4d4f0; color: #7b8ba8;
+}
+.tl-gantt-block.rec-block { color: #5a7a5a; }
+.tl-gantt-block.rec-block.work     { background: #e8f0ff; color: #4a6fa5; }
+.tl-gantt-block.rec-block.house    { background: #e8f8e8; color: #5a8a5a; }
+.tl-gantt-block.rec-block.exercise { background: #fff0e8; color: #c07840; }
+.tl-gantt-block.rec-block.charge   { background: #f0e8ff; color: #7a5a9a; }
+.tl-gantt-block.rec-block.entertainment { background: #ffe8e8; color: #c04848; }
+.tl-gantt-block.rec-block.uncategorized { background: #f5f5f5; color: #888; }
+.tl-gantt-block.ongoing {
+  animation: ongoingPulse 2s ease-in-out infinite;
+}
+.tl-gantt-time { margin-left: auto; opacity: .7; font-size: 10px; white-space: nowrap; }
+.tl-gantt-dur  { opacity: .7; font-size: 10px; white-space: nowrap; }
+.tl-gantt-actions { display: flex; gap: 2px; margin-left: 4px; }
+
+.tl-gantt-gap {
+  position: absolute; left: 4px; right: 4px; border-radius: 4px;
+  font-size: 9px; color: #d1d5db; display: flex; align-items: center;
+  justify-content: center; border: 1px dashed #eee; background: #fafafa;
+}
+
+.tl-gantt-now {
+  position: absolute; left: 0; right: 0; height: 2px; z-index: 10;
+}
+.tl-gantt-now-inner {
+  position: absolute; left: 0; right: 0; top: 0; height: 2px;
+  background: #ef4444;
+}
+.tl-gantt-now-label {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  font-size: 10px; color: #ef4444; font-weight: 700; z-index: 11;
+}
+
+/* Remove old timeline styles we no longer need */
+.timeline-dual, .tl-dual-left, .tl-dual-right, .tl-dual-label, .tl-dual-empty { display: none; }
 
 @media (max-width: 400px) {
   .tl-v2-plan, .tl-v2-actual { font-size: 12px; padding: 8px 10px; }
   .tl-v2-dur { font-size: 11px; }
+  .tl-gantt-block { font-size: 9px; padding: 4px 5px; min-height: 28px; }
+  .tl-gantt-time, .tl-gantt-dur { font-size: 8px; }
 }
 
 /* ===== Date Navigation ===== */
@@ -1078,7 +1136,11 @@ function getActivePlanRemaining() {
   return Math.max(0,Math.floor((new Date(activePlan.end)-Date.now())/60000));
 }
 
-// ========== TIMELINE BLOCK CONSTRUCTION (plan/record separate columns) ==========
+// ========== TIMELINE GANTT (3-column: plans | axis | records) ==========
+const TL_PX_PER_MIN = 2.2;
+const TL_START_HOUR = 6;
+const TL_END_HOUR = 22;
+
 function buildTimelinePlanBlocks() {
   const sessions = getTodaySessions(selectedDate).filter(s => s.type === 'plan');
   const blocks = sessions.map(s => ({
@@ -1101,81 +1163,30 @@ function buildTimelinePlanBlocks() {
 
 function buildTimelineRecordBlocks() {
   const sessions = getTodaySessions(selectedDate).filter(s => s.type === 'record');
-  const blocks = sessions.map(s => ({
+  return sessions.map(s => ({
     session: s,
     start: new Date(s.start),
     end: s.end ? new Date(s.end) : null,
-  }));
-  blocks.sort((a, b) => a.start - b.start);
-  return blocks;
+  })).sort((a, b) => a.start - b.start);
 }
 
-function renderTimelineColumn(blocks, nowTime, colType) {
-  const cats = colType === 'plan' ? PLAN_CATEGORIES : RECORD_CATEGORIES;
-  let html = '';
-  let prevEnd = new Date(0);
-  let lastHour = -1;
+function sessionStartHour(s) { return new Date(s.start).getHours(); }
+function sessionEndHour(s) {
+  if (s.type === 'record' && !s.end) return new Date().getHours() + 1;
+  return new Date(s.end).getHours() + (new Date(s.end).getMinutes() > 0 ? 1 : 0);
+}
 
-  for (let i = 0; i < blocks.length; i++) {
-    const b = blocks[i];
-    const blockStart = b.start;
-    const isActive = colType === 'record' && !b.end;
-    const blockEnd = isActive ? nowTime : (b.end || nowTime);
-    const durMin = Math.max(1, (blockEnd - blockStart) / 60000);
+function tlMinToPx(min) { return min * TL_PX_PER_MIN; }
+function tlTimeToMin(t) { return t.getHours() * 60 + t.getMinutes(); }
+function tlTimeToPx(t, baseMin) { return tlMinToPx(tlTimeToMin(t) - baseMin); }
 
-    // Gap before this block
-    if (blockStart > prevEnd) {
-      const gapMin = Math.round((blockStart - prevEnd) / 60000);
-      if (gapMin >= 3) {
-        const h = Math.floor(gapMin / 60);
-        const m = gapMin % 60;
-        const text = h > 0 ? `闲置 · ${h}h${m > 0 ? m + 'm' : ''}` : `闲置 · ${m}m`;
-        html += `<div class="tl-v2-gap"><span class="tl-v2-gap-dot"></span>${text}</div>`;
-      }
-    }
-
-    // Hour marker
-    const blockHour = blockStart.getHours();
-    if (blockHour !== lastHour) {
-      html += `<div class="tl-v2-hour">${String(blockHour).padStart(2,'0')}:00</div>`;
-      lastHour = blockHour;
-    }
-
-    const s = b.session;
-    const cat = cats[s.category];
-    const h = Math.max(40, Math.ceil(durMin * 1.8));
-
-    if (colType === 'plan') {
-      const dur = Math.round((blockEnd - blockStart) / 60000);
-      html += `<div class="tl-v2-track plan-only ${s.category}">
-        <div class="tl-v2-plan" style="min-height:${h}px">
-          <span>${cat.icon}</span><span>${cat.name}</span>
-          <span class="tl-v2-time">${fmtTime(s.start)} – ${fmtTime(blockEnd)}</span>
-          <span class="tl-v2-dur">${fmtDuration(dur)}</span>
-          <span class="tl-v2-noedit">不可编辑</span>
-        </div>
-      </div>`;
-    } else {
-      const endStr = isActive ? '进行中' : fmtTime(s.end);
-      const durStr = isActive ? '计时中…' : fmtDuration(Math.round(durMin));
-      const cls = 'tl-v2-track record-only ' + s.category + (isActive ? ' ongoing' : '');
-      html += `<div class="${cls}">
-        <div class="tl-v2-actual" style="min-height:${h}px">
-          <span>${cat.icon} ${cat.name}</span>
-          <span class="tl-v2-time">${fmtTime(s.start)} – ${endStr}</span>
-          <span class="tl-v2-dur">${durStr}</span>
-          <div class="tl-v2-actions">
-            <button class="tl-action-btn" onclick="event.stopPropagation();editSessionById('${s.id}')">✏️</button>
-            <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${s.id}')">🗑</button>
-          </div>
-        </div>
-      </div>`;
-    }
-
-    prevEnd = blockEnd;
-  }
-
-  return html;
+function tlRenderGap(fromMin, toMin, baseMin) {
+  const gapDur = toMin - fromMin;
+  if (gapDur < 2) return '';
+  const top = tlMinToPx(fromMin - baseMin);
+  const h = tlMinToPx(gapDur);
+  const label = gapDur >= 60 ? `${Math.floor(gapDur/60)}h${gapDur%60?' '+(gapDur%60)+'m':''}` : `${Math.round(gapDur)}m`;
+  return `<div class="tl-gantt-gap" style="top:${top.toFixed(1)}px;height:${h.toFixed(1)}px">${label}</div>`;
 }
 
 function renderNowLine() {
@@ -1352,35 +1363,129 @@ function renderApp() {
   const recordBlocks = buildTimelineRecordBlocks();
   const hasAnyBlocks = planBlocks.length > 0 || recordBlocks.length > 0;
 
+  // Compute visible time range
+  let rangeStartH = TL_START_HOUR, rangeEndH = TL_END_HOUR;
+  const allSessions = getTodaySessions(selectedDate);
+  if (allSessions.length > 0) {
+    const minH = Math.min(...allSessions.map(sessionStartHour));
+    const maxH = Math.max(...allSessions.map(sessionEndHour), new Date().getHours());
+    rangeStartH = Math.max(0, Math.min(minH - 1, TL_START_HOUR));
+    rangeEndH = Math.min(24, Math.max(maxH + 1, TL_END_HOUR));
+  }
+  const rangeStartMin = rangeStartH * 60;
+  const rangeEndMin = rangeEndH * 60;
+  const rangeTotalMin = rangeEndMin - rangeStartMin;
+  const rangeTotalPx = tlMinToPx(rangeTotalMin);
+
   if (!hasAnyBlocks) {
     const emptyMsg = isTodayView ? '今天还没有记录' : `${fmtDateFull(selectedDate)} 没有记录`;
     html+=`<div class="empty-state"><div class="empty-icon">📋</div><div>${emptyMsg}</div><div class="empty-sub">计划或记录一条来开始</div></div>`;
   } else {
-    html+=`<div class="timeline-dual">`;
-    const nowTime = new Date();
-
-    // Shared hour markers and NOW line extracted from both columns
-    // We render columns independently; NOW line appears after the record column
-    html+=`<div class="tl-dual-left">
-      <div class="tl-dual-label">📋 计划</div>
-      ${renderTimelineColumn(planBlocks, nowTime, 'plan') || '<div class="tl-dual-empty">暂无计划</div>'}
+    // Three-column layout: plans | axis | records
+    html+=`<div class="tl-gantt-hdr">
+      <div class="tl-gantt-hdr-plan">📋 计划</div>
+      <div class="tl-gantt-hdr-axis"></div>
+      <div class="tl-gantt-hdr-rec">⏱️ 记录</div>
     </div>`;
 
-    html+=`<div class="tl-dual-right">
-      <div class="tl-dual-label">⏱ 记录</div>
-      ${renderTimelineColumn(recordBlocks, nowTime, 'record') || '<div class="tl-dual-empty">暂无记录</div>'}`;
+    html+=`<div class="tl-gantt-wrap">`;
 
-    // NOW line in record column if there's an active record
-    if (isTodayView) {
-      const hasActive = recordBlocks.some(b => !b.end);
-      if (hasActive) {
-        html += renderNowLine();
+    // --- Plan column ---
+    html+=`<div class="tl-gantt-col plan-col" style="height:${rangeTotalPx}px">`;
+    const nowTime = new Date();
+    const baseMin = rangeStartMin;
+
+    // Gaps & blocks on plan side
+    let planPrevEndMin = rangeStartMin;
+    for (const b of planBlocks) {
+      const sMin = tlTimeToMin(b.start);
+      const eMin = tlTimeToMin(b.end);
+      // Gap
+      if (sMin > planPrevEndMin + 1) {
+        const gapDur = sMin - planPrevEndMin;
+        html += tlRenderGap(planPrevEndMin, sMin, baseMin);
       }
+      // Block
+      const dur = Math.round((b.end - b.start) / 60000);
+      const cat = PLAN_CATEGORIES[b.session.category];
+      html += `<div class="tl-gantt-block plan-block" style="top:${tlTimeToPx(b.start,baseMin).toFixed(1)}px;height:${tlMinToPx(eMin-sMin).toFixed(1)}px">
+        <span>${cat.icon} ${cat.name}</span>
+        <span class="tl-gantt-time">${fmtTime(b.session.start)}–${fmtTime(b.end)}</span>
+        <span class="tl-gantt-dur">${fmtDuration(dur)}</span>
+      </div>`;
+      planPrevEndMin = eMin;
+    }
+    // Final gap on plan side
+    if (rangeEndMin > planPrevEndMin + 1) {
+      html += tlRenderGap(planPrevEndMin, rangeEndMin, baseMin);
     }
 
+    // NOW line on plan side
+    if (isTodayView) {
+      const nowMin = tlTimeToMin(nowTime);
+      if (nowMin >= rangeStartMin && nowMin <= rangeEndMin) {
+        html += `<div class="tl-gantt-now" style="top:${tlTimeToPx(nowTime,baseMin).toFixed(1)}px"><div class="tl-gantt-now-inner"></div></div>`;
+      }
+    }
     html+=`</div>`;
 
+    // --- Time axis ---
+    html+=`<div class="tl-gantt-axis" style="height:${rangeTotalPx}px">`;
+    for (let h = rangeStartH; h <= rangeEndH; h++) {
+      const top = tlMinToPx((h - rangeStartH) * 60);
+      html += `<div class="tl-gantt-tick" style="top:${top.toFixed(1)}px">${String(h).padStart(2,'0')}:00</div>`;
+    }
+    // NOW label in axis
+    if (isTodayView) {
+      const nowMin = tlTimeToMin(nowTime);
+      if (nowMin >= rangeStartMin && nowMin <= rangeEndMin) {
+        html += `<div class="tl-gantt-now-label" style="top:${(tlTimeToPx(nowTime,baseMin)-7).toFixed(1)}px">NOW</div>`;
+      }
+    }
     html+=`</div>`;
+
+    // --- Record column ---
+    html+=`<div class="tl-gantt-col record-col" style="height:${rangeTotalPx}px">`;
+    let recPrevEndMin = rangeStartMin;
+    for (const b of recordBlocks) {
+      const sMin = tlTimeToMin(b.start);
+      const isActive = !b.end;
+      const eMin = isActive ? tlTimeToMin(nowTime) : tlTimeToMin(b.end);
+      // Gap
+      if (sMin > recPrevEndMin + 1) {
+        const gapDur = sMin - recPrevEndMin;
+        html += tlRenderGap(recPrevEndMin, sMin, baseMin);
+      }
+      // Block
+      const cat = RECORD_CATEGORIES[b.session.category];
+      const durMin = Math.max(1, (new Date(isActive ? nowTime : b.session.end) - b.start) / 60000);
+      const endStr = isActive ? '进行中' : fmtTime(b.session.end);
+      const durStr = isActive ? '计时中…' : fmtDuration(Math.round(durMin));
+      html += `<div class="tl-gantt-block rec-block ${b.session.category}${isActive?' ongoing':''}" style="top:${tlTimeToPx(b.start,baseMin).toFixed(1)}px;height:${tlMinToPx(eMin-sMin).toFixed(1)}px">
+        <span>${cat.icon} ${cat.name}</span>
+        <span class="tl-gantt-time">${fmtTime(b.session.start)}–${endStr}</span>
+        <span class="tl-gantt-dur">${durStr}</span>
+        <div class="tl-gantt-actions">
+          <button class="tl-action-btn" onclick="event.stopPropagation();editSessionById('${b.session.id}')">✏️</button>
+          <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${b.session.id}')">🗑</button>
+        </div>
+      </div>`;
+      recPrevEndMin = eMin;
+    }
+    // Final gap on record side
+    if (rangeEndMin > recPrevEndMin + 1) {
+      html += tlRenderGap(recPrevEndMin, rangeEndMin, baseMin);
+    }
+    // NOW line on record side
+    if (isTodayView) {
+      const nowMin = tlTimeToMin(nowTime);
+      if (nowMin >= rangeStartMin && nowMin <= rangeEndMin) {
+        html += `<div class="tl-gantt-now" style="top:${tlTimeToPx(nowTime,baseMin).toFixed(1)}px"><div class="tl-gantt-now-inner"></div></div>`;
+      }
+    }
+    html+=`</div>`;
+
+    html+=`</div>`; // tl-gantt-wrap
   }
   html+=`</div>`;
 
