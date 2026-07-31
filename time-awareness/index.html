@@ -977,6 +977,20 @@ async function init() {
   setInterval(()=>{if(activeRecord)updateRecordDisplay();cleanupExpiredPlans();},1000);
 }
 
+// Push on page close to avoid losing data between devices
+window.addEventListener('beforeunload', () => {
+  if (getSyncUrl()) {
+    navigator.sendBeacon(getSyncUrl(), JSON.stringify(data));
+  }
+});
+
+// Also attempt push when page becomes hidden (switching tabs, locking phone)
+window.addEventListener('visibilitychange', () => {
+  if (document.hidden && getSyncUrl()) {
+    navigator.sendBeacon(getSyncUrl(), JSON.stringify(data));
+  }
+});
+
 init();
 </script>
 </body>
