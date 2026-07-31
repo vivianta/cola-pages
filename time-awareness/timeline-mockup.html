@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>时间线设计稿</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f8f9fa; padding:24px; color:#333; }
+  h2 { font-size:18px; margin-bottom:16px; }
+  
+  .timeline-container { background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .timeline-scroll { overflow-x:auto; padding-bottom:8px; }
+  .timeline { position:relative; min-width:900px; }
+  
+  /* Time axis */
+  .time-axis { display:flex; border-bottom:1px solid #e5e7eb; height:36px; align-items:flex-end; padding:0 80px 0 120px; }
+  .time-tick { flex:1; font-size:11px; color:#9ca3af; text-align:center; position:relative; padding-bottom:6px; }
+  .time-tick::after { content:''; position:absolute; bottom:0; left:50%; width:1px; height:4px; background:#d1d5db; }
+  
+  /* Lane */
+  .lane { display:flex; align-items:center; height:52px; border-bottom:1px solid #f3f4f6; position:relative; }
+  .lane-label { width:120px; flex-shrink:0; padding-left:16px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; }
+  .lane-tracks { flex:1; position:relative; height:38px; margin:7px 0; }
+  
+  /* Time grid lines */
+  .grid-lines { position:absolute; inset:0; display:flex; }
+  .grid-line { flex:1; border-left:1px dashed #f3f4f6; }
+  
+  /* Session blocks */
+  .session-block { position:absolute; top:4px; height:30px; border-radius:6px; display:flex; align-items:center; padding:0 10px; font-size:12px; color:#fff; white-space:nowrap; cursor:default; overflow:hidden; }
+  .session-block .time { opacity:.7; margin-right:6px; }
+  .plan-block { top:2px; height:34px; border:2px dashed rgba(0,0,0,.15); background-clip:padding-box; }
+  
+  /* Legend */
+  .legend { display:flex; gap:16px; margin-top:16px; font-size:13px; }
+  .legend-item { display:flex; align-items:center; gap:6px; }
+  .legend-dot { width:12px; height:12px; border-radius:3px; }
+  .legend-dot.plan { background:#4A90D9; border:2px dashed rgba(0,0,0,.15); }
+  .legend-dot.record { background:#4A90D9; }
+  
+  .now-line { position:absolute; top:0; bottom:0; width:2px; background:#ef4444; z-index:5; }
+  .now-label { position:absolute; top:-18px; left:50%; transform:translateX(-50%); font-size:10px; color:#ef4444; font-weight:600; white-space:nowrap; }
+</style>
+</head>
+<body>
+<h2>今天的时间线</h2>
+<div class="timeline-container">
+  <div class="timeline-scroll">
+    <div class="timeline">
+      <!-- Time axis: 6:00 - 22:00 -->
+      <div class="time-axis">
+        <div class="time-tick">06:00</div><div class="time-tick">07:00</div><div class="time-tick">08:00</div>
+        <div class="time-tick">09:00</div><div class="time-tick">10:00</div><div class="time-tick">11:00</div>
+        <div class="time-tick">12:00</div><div class="time-tick">13:00</div><div class="time-tick">14:00</div>
+        <div class="time-tick">15:00</div><div class="time-tick">16:00</div><div class="time-tick">17:00</div>
+        <div class="time-tick">18:00</div><div class="time-tick">19:00</div><div class="time-tick">20:00</div>
+        <div class="time-tick">21:00</div><div class="time-tick">22:00</div>
+      </div>
+      
+      <!-- Plan lane -->
+      <div class="lane">
+        <div class="lane-label">📋 计划</div>
+        <div class="lane-tracks">
+          <div class="grid-lines">
+            <div class="grid-line"></div><div class="grid-line"></div><div class="grid-line"></div>
+            <div class="grid-line"></div><div class="grid-line"></div><div class="grid-line"></div>
+            <div class="grid-line"></div><div class="grid-line"></div><div class="grid-line"></div>
+            <div class="grid-line"></div><div class="grid-line"></div><div class="grid-line"></div>
+            <div class="grid-line"></div><div class="grid-line"></div><div class="grid-line"></div>
+            <div class="grid-line"></div>
+          </div>
+          <div class="session-block plan-block" style="left:6.25%; width:6.25%; background:#4A90D9;"><span class="time">07:00</span> 💼 工作</div>
+          <div class="session-block plan-block" style="left:25%; width:6.25%; background:#4CAF84;"><span class="time">10:00</span> 🏠 家务</div>
+          <div class="session-block plan-block" style="left:43.75%; width:6.25%; background:#F09B4A;"><span class="time">13:00</span> 🏃 锻炼</div>
+          <div class="session-block plan-block" style="left:56.25%; width:6.25%; background:#8B7EC8;"><span class="time">15:00</span> 🔋 充电</div>
+        </div>
+      </div>
+      
+      <!-- Record lane -->
+      <div class="lane">
+        <div class="lane-label">⏱ 记录</div>
+        <div class="lane-tracks">
+          <div class="grid-lines">
+            <div class="grid-line"></div><div class="grid-line"></div><div class="grid-line"></div>
+            <div class="grid-line"></div><div class="grid-line"></div><div class="grid-line"></div>
+            <div class="grid-line"></div><div class="grid-line"></div><div class="grid-line"></div>
+            <div class="grid-line"></div><div class="grid-line"></div><div class="grid-line"></div>
+            <div class="grid-line"></div><div class="grid-line"></div><div class="grid-line"></div>
+            <div class="grid-line"></div>
+          </div>
+          <div class="session-block" style="left:6.25%; width:7.5%; background:#4A90D9;"><span class="time">07:00</span> 💼 工作 1h12m</div>
+          <div class="session-block" style="left:23.75%; width:4.5%; background:#E0687A;"><span class="time">09:48</span> 📱 消遣 43m</div>
+          <div class="session-block" style="left:31.25%; width:6.4%; background:#4A90D9;"><span class="time">11:00</span> 💼 工作 1h1m</div>
+          <div class="session-block" style="left:43.75%; width:7.2%; background:#F09B4A;"><span class="time">13:00</span> 🏃 锻炼 1h9m</div>
+          <div class="session-block" style="left:55.5%; width:8.3%; background:#8B7EC8;"><span class="time">14:54</span> 🔋 充电 1h20m</div>
+          <div class="session-block" style="left:68.5%; width:5.5%; background:#E0687A;"><span class="time">17:00</span> 📱 消遣</div>
+          <div class="now-line" style="left:65%;"><div class="now-label">现在</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot plan"></div> 计划（固定1h，虚线边框）</div>
+  <div class="legend-item"><div class="legend-dot record"></div> 实际记录（如实长，实心）</div>
+  <div style="width:2px;height:12px;background:#ef4444;"></div> 当前时间
+</div>
+
+<p style="margin-top:20px; color:#9ca3af; font-size:13px;">← 左滑查看更多 →</p>
+</body>
+</html>
