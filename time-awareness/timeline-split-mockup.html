@@ -3,40 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>左右分栏时间线 — 原型 v3</title>
+<title>计划/记录 一致布局 — 原型</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f8f9fa; padding:16px; color:#333; }
-  .container { max-width:480px; margin:0 auto; }
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f0f2f5; padding:12px; color:#333; }
+  .container { max-width:460px; margin:0 auto; }
 
-  .header { display:flex; margin-bottom:4px; align-items:stretch; }
-  .header .h-plan { flex:1; text-align:center; padding:6px 0; font-size:13px; font-weight:600; border-radius:8px; background:#f0f4ff; color:#7b8ba8; margin-right:2px; }
-  .header .h-axis { width:44px; flex-shrink:0; }
-  .header .h-rec  { flex:1; text-align:center; padding:6px 0; font-size:13px; font-weight:600; border-radius:8px; background:#f0f9f0; color:#6b8a6b; margin-left:2px; }
+  /* Mode toggle */
+  .mode-toggle { display:flex; gap:0; margin-bottom:10px; background:#e5e7eb; border-radius:10px; padding:3px; }
+  .mode-toggle button { flex:1; padding:8px; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; background:transparent; color:#9ca3af; transition:.15s; }
+  .mode-toggle button.active { background:#fff; color:#333; box-shadow:0 1px 3px rgba(0,0,0,.1); }
 
-  /* Scrollable viewport */
-  .viewport { overflow-y:auto; position:relative; border-radius:0 0 8px 8px; }
+  /* Top block — same height for both modes (56px) */
+  .top-block { background:#fff; border-radius:12px; padding:12px 16px; margin-bottom:10px; height:56px; display:flex; align-items:center; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,.03); }
+  .top-block .icon { font-size:22px; }
+  .top-block .text { font-size:14px; font-weight:600; }
+  .top-block .sub  { font-size:11px; color:#9ca3af; }
+  .top-block .time-display { margin-left:auto; font-size:28px; font-weight:700; color:#4A90D9; font-variant-numeric:tabular-nums; }
+
+  /* Category buttons */
+  .cat-row { display:flex; gap:8px; margin-bottom:10px; }
+  .cat-btn { flex:1; padding:10px 4px; border-radius:10px; border:1.5px solid #e5e7eb; background:#fff; font-size:11px; cursor:pointer; text-align:center; display:flex; flex-direction:column; align-items:center; gap:3px; color:#6b7280; transition:.15s; }
+  .cat-btn .emoji { font-size:18px; }
+  .cat-btn:hover { border-color:#b0b8c0; }
+  .cat-btn.active { border-color:#4A90D9; color:#4A90D9; }
+  .cat-btn.idle { color:#b0b0b0; border-color:#ddd; }
+  .cat-btn.idle:hover { border-color:#c0c0c0; background:#fafafa; }
+
+  /* Sub text below buttons */
+  .sub-text { font-size:10px; color:#b0b0b0; text-align:center; margin-bottom:8px; }
+
+  /* Date nav */
+  .date-nav { display:flex; align-items:center; justify-content:center; gap:12px; padding:4px 0 8px; font-size:15px; font-weight:700; }
+  .date-nav .arrow { width:28px; height:28px; border-radius:50%; border:1px solid #e5e7eb; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; color:#6b7280; }
+
+  /* Split timeline section */
+  .tl-header { display:flex; margin-bottom:4px; align-items:stretch; }
+  .tl-header .h-plan { flex:1; text-align:center; padding:5px 0; font-size:12px; font-weight:600; border-radius:8px; background:#f5f8ff; color:#8a98b4; margin-right:2px; }
+  .tl-header .h-axis { width:42px; flex-shrink:0; }
+  .tl-header .h-rec  { flex:1; text-align:center; padding:5px 0; font-size:12px; font-weight:600; border-radius:8px; background:#f5faf5; color:#8aaa8a; margin-left:2px; }
+
+  .viewport { overflow-y:auto; position:relative; border-radius:0 0 8px 8px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.03); }
   .viewport::-webkit-scrollbar { width:4px; }
   .viewport::-webkit-scrollbar-thumb { background:#e5e7eb; border-radius:2px; }
 
   .timeline-wrap { display:flex; position:relative; }
-
   .plan-col { flex:1; position:relative; border-right:1px solid #e5e7eb; margin-right:2px; }
-  .time-axis { width:40px; flex-shrink:0; position:relative; }
+  .time-axis { width:38px; flex-shrink:0; position:relative; }
   .time-label { position:absolute; left:50%; transform:translate(-50%,-6px); font-size:9px; color:#9ca3af; white-space:nowrap; }
   .record-col { flex:1; position:relative; border-left:1px solid #e5e7eb; margin-left:2px; }
 
   .block { position:absolute; left:4px; right:4px; border-radius:7px; padding:4px 8px; font-size:11px; display:flex; align-items:center; gap:5px; overflow:hidden; min-height:36px; }
   .block .time-inner { margin-left:auto; opacity:.7; font-size:10px; white-space:nowrap; }
 
-  /* Plan blocks: very pale + dashed */
   .plan-work        { background:#f5f8ff; border:1.5px dashed #c8d4ec; color:#8a98b4; }
   .plan-house       { background:#f8f4ff; border:1.5px dashed #d4c8e8; color:#a090b8; }
   .plan-exercise    { background:#fff8f4; border:1.5px dashed #e8d0b8; color:#c09878; }
   .plan-charge      { background:#f5faf5; border:1.5px dashed #bcd0bc; color:#8aaa8a; }
   .plan-entertain   { background:#fff4f4; border:1.5px dashed #ecc8c8; color:#c08888; }
+  .plan-idle        { background:#fafafa; border:1.5px dashed #dcdcdc; color:#b0b0b0; }
 
-  /* Record blocks: deep saturated + solid */
   .rec-work         { background:#d0e0ff; color:#1a3a6a; border-left:3px solid #3366cc; }
   .rec-house        { background:#e0d0f4; color:#4a2a6a; border-left:3px solid #7733aa; }
   .rec-exercise     { background:#ffe0c8; color:#804020; border-left:3px solid #cc6622; }
@@ -45,25 +71,53 @@
 
   .now-line { position:absolute; left:0; right:0; height:2px; background:#ef4444; z-index:10; }
   .now-label { position:absolute; font-size:10px; color:#ef4444; font-weight:700; z-index:11; }
-
   .gap { position:absolute; left:4px; right:4px; border-radius:4px; font-size:9px; color:#d1d5db; display:flex; align-items:center; justify-content:center; border:1px dashed #eee; background:#fafafa; }
 
-  .legend { margin-top:12px; display:flex; flex-wrap:wrap; gap:6px 12px; font-size:10px; color:#9ca3af; justify-content:center; }
+  .legend { margin-top:10px; display:flex; flex-wrap:wrap; gap:5px 10px; font-size:10px; color:#9ca3af; justify-content:center; }
   .legend span { display:flex; align-items:center; gap:3px; }
   .legend .dot { width:8px; height:8px; border-radius:2px; display:inline-block; }
-  .legend .dot.w { background:#4a7abf; } .legend .dot.h { background:#8a5ac0; }
-  .legend .dot.e { background:#e88840; } .legend .dot.c { background:#4a9a4a; }
-  .legend .dot.n { background:#d04848; }
+  .dot.w{background:#3366cc}.dot.c{background:#338833}.dot.h{background:#7733aa}.dot.e{background:#cc6622}.dot.n{background:#cc3333}.dot.i{background:#ccc}
 </style>
 </head>
 <body>
 <div class="container">
-  <div class="header">
-    <div class="h-plan">📋 计划</div>
-    <div class="h-axis"></div>
-    <div class="h-rec">⏱️ 记录</div>
+  <!-- Mode toggle -->
+  <div class="mode-toggle">
+    <button class="active">📋 计划</button>
+    <button>⏱️ 记录</button>
   </div>
 
+  <!-- Top block — same height as record mode's timer -->
+  <div class="top-block">
+    <span class="icon">📋</span>
+    <div><div class="text">计划模式</div><div class="sub">选择分类 · 每次 1 小时计划</div></div>
+  </div>
+
+  <!-- Category buttons -->
+  <div class="cat-row">
+    <button class="cat-btn active"><span class="emoji">💼</span>工作</button>
+    <button class="cat-btn"><span class="emoji">🏠</span>家务</button>
+    <button class="cat-btn"><span class="emoji">🏃</span>锻炼</button>
+    <button class="cat-btn"><span class="emoji">🔋</span>充电</button>
+    <button class="cat-btn"><span class="emoji">📱</span>消遣</button>
+    <button class="cat-btn idle"><span class="emoji">🕊️</span>空闲</button>
+  </div>
+  <div class="sub-text">固定 1 小时 · 新计划自动截断上一个</div>
+
+  <!-- Date nav -->
+  <div class="date-nav">
+    <div class="arrow">←</div>
+    <div>2026.07.31 周五</div>
+    <div class="arrow">→</div>
+    <button style="font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid #e5e7eb;background:#fff;color:#4A90D9;cursor:pointer;">今天</button>
+  </div>
+
+  <!-- Split timeline -->
+  <div class="tl-header">
+    <div class="h-plan">计划</div>
+    <div class="h-axis"></div>
+    <div class="h-rec">记录</div>
+  </div>
   <div class="viewport" id="viewport">
     <div class="timeline-wrap">
       <div class="plan-col" id="planCol"></div>
@@ -78,6 +132,7 @@
     <span><span class="dot h"></span>家务</span>
     <span><span class="dot e"></span>锻炼</span>
     <span><span class="dot n"></span>消遣</span>
+    <span><span class="dot i"></span>空闲</span>
   </div>
 </div>
 
@@ -90,7 +145,9 @@ const TOTAL_PX = TOTAL_MIN * PX_PER_MIN;
 
 const plans = [
   { cat:'💼', label:'工作', start:'07:00', end:'08:00', cls:'plan-work' },
+  { cat:'🕊️', label:'空闲', start:'08:00', end:'11:00', cls:'plan-idle' },
   { cat:'💼', label:'工作', start:'11:00', end:'12:00', cls:'plan-work' },
+  { cat:'🕊️', label:'空闲', start:'12:00', end:'14:00', cls:'plan-idle' },
   { cat:'🔋', label:'充电', start:'14:00', end:'15:00', cls:'plan-charge' },
 ];
 const records = [
@@ -103,18 +160,14 @@ const records = [
 
 function timeToMin(t) { const [h,m]=t.split(':').map(Number); return (h-START_HOUR)*60+m; }
 function timeToPx(t) { return Math.max(0, timeToMin(t) * PX_PER_MIN); }
-
 function minToPx(m) { return m * PX_PER_MIN; }
 
-// Find viewport range: earliest start to NOW (or latest end)
 const allStarts = [...plans.map(p=>timeToMin(p.start)), ...records.map(r=>timeToMin(r.start))];
 const allEnds   = [...plans.map(p=>timeToMin(p.end)),   ...records.map(r=>timeToMin(r.end))];
 const firstMin = Math.min(...allStarts);
 const nowMin = timeToMin('14:30');
-const lastMin = Math.max(...allEnds);
-const viewEndMin = Math.max(nowMin, lastMin) + 15; // 15min padding after
+const viewEndMin = Math.max(nowMin, Math.max(...allEnds)) + 15;
 
-// Build time labels
 const axis = document.getElementById('axis');
 axis.style.height = TOTAL_PX + 'px';
 for (let h = START_HOUR; h <= END_HOUR; h++) {
@@ -126,7 +179,6 @@ for (let h = START_HOUR; h <= END_HOUR; h++) {
   axis.appendChild(el);
 }
 
-// Plan column
 const planCol = document.getElementById('planCol');
 planCol.style.height = TOTAL_PX + 'px';
 plans.forEach(p => {
@@ -140,7 +192,23 @@ plans.forEach(p => {
   planCol.appendChild(el);
 });
 
-// Record column
+// Plan gaps (grey)
+let pPrev = 0;
+plans.forEach(p => {
+  const s = timeToMin(p.start);
+  const dur = s - pPrev;
+  if (dur >= 5) {
+    const el = document.createElement('div');
+    el.className = 'gap';
+    el.style.top = minToPx(pPrev)+'px';
+    el.style.height = minToPx(dur)+'px';
+    const m = Math.round(dur);
+    el.textContent = m>=60?`${Math.floor(m/60)}h${m%60?' '+(m%60)+'m':''}`:`${m}m`;
+    planCol.appendChild(el);
+  }
+  pPrev = timeToMin(p.end);
+});
+
 const recordCol = document.getElementById('recordCol');
 recordCol.style.height = TOTAL_PX + 'px';
 records.forEach(r => {
@@ -154,7 +222,6 @@ records.forEach(r => {
   recordCol.appendChild(el);
 });
 
-// Gaps on record side
 let prevEnd = 0;
 records.forEach(r => {
   const s = timeToMin(r.start);
@@ -165,7 +232,7 @@ records.forEach(r => {
     el.style.top = minToPx(prevEnd)+'px';
     el.style.height = minToPx(dur)+'px';
     const m = Math.round(dur);
-    el.textContent = m >= 60 ? `${Math.floor(m/60)}h${m%60?' '+(m%60)+'m':''}` : `${m}m`;
+    el.textContent = m>=60?`${Math.floor(m/60)}h${m%60?' '+(m%60)+'m':''}`:`${m}m`;
     recordCol.appendChild(el);
   }
   prevEnd = timeToMin(r.end);
@@ -176,11 +243,10 @@ if (TOTAL_MIN - prevEnd >= 5) {
   el.className = 'gap';
   el.style.top = minToPx(prevEnd)+'px';
   el.style.height = minToPx(dur)+'px';
-  el.textContent = dur >= 60 ? `${Math.floor(dur/60)}h${dur%60?' '+(dur%60)+'m':''}` : `${Math.round(dur)}m`;
+  el.textContent = dur>=60?`${Math.floor(dur/60)}h${dur%60?' '+(dur%60)+'m':''}`:`${Math.round(dur)}m`;
   recordCol.appendChild(el);
 }
 
-// NOW line
 const nowPx = timeToPx('14:30');
 ['planCol','recordCol'].forEach(id => {
   const nl = document.createElement('div');
@@ -194,11 +260,10 @@ nowLabel.style.top = (nowPx-7)+'px';
 nowLabel.textContent = 'NOW';
 axis.appendChild(nowLabel);
 
-// Set viewport height to ~400px and scroll to show first block → NOW
 const viewport = document.getElementById('viewport');
 const viewH = Math.min(420, minToPx(viewEndMin - firstMin) + 60);
 viewport.style.height = viewH + 'px';
-viewport.scrollTop = minToPx(firstMin) - 16; // small top padding
+viewport.scrollTop = minToPx(firstMin) - 16;
 </script>
 </body>
 </html>
