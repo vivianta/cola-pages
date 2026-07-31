@@ -428,6 +428,10 @@ body {
 .tl-gantt-hdr-axis { width: 44px; flex-shrink: 0; }
 
 .tl-gantt-wrap { display: flex; position: relative; }
+.tl-gantt-scroll {
+  max-height: 55vh; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .tl-gantt-col {
   flex: 1; position: relative; min-width: 0;
 }
@@ -1363,24 +1367,36 @@ function renderApp() {
   const recordBlocks = buildTimelineRecordBlocks();
   const hasAnyBlocks = planBlocks.length > 0 || recordBlocks.length > 0;
 
-  // Compute visible time range
-  let rangeStartH = TL_START_HOUR, rangeEndH = TL_END_HOUR;
-  const allSessions = getTodaySessions(selectedDate);
-  if (allSessions.length > 0) {
-    const minH = Math.min(...allSessions.map(sessionStartHour));
-    const maxH = Math.max(...allSessions.map(sessionEndHour), new Date().getHours());
-    rangeStartH = Math.max(0, Math.min(minH - 1, TL_START_HOUR));
-    rangeEndH = Math.min(24, Math.max(maxH + 1, TL_END_HOUR));
-  }
-  const rangeStartMin = rangeStartH * 60;
-  const rangeEndMin = rangeEndH * 60;
-  const rangeTotalMin = rangeEndMin - rangeStartMin;
-  const rangeTotalPx = tlMinToPx(rangeTotalMin);
-
   if (!hasAnyBlocks) {
     const emptyMsg = isTodayView ? '今天还没有记录' : `${fmtDateFull(selectedDate)} 没有记录`;
     html+=`<div class="empty-state"><div class="empty-icon">📋</div><div>${emptyMsg}</div><div class="empty-sub">计划或记录一条来开始</div></div>`;
   } else {
+    const nowTime = new Date();
+
+    // Compute full time range from all blocks
+    const allBlocks = [...planBlocks, ...recordBlocks];
+    const allStarts = allBlocks.map(b => b.start);
+    const earliestStart = new Date(Math.min(...allStarts));
+    // Latest end: max of plan ends, record ends, and NOW (for active records)
+    const ends = allBlocks.map(b => b.end || nowTime);
+    if (isTodayView) ends.push(nowTime);
+    const latestEnd = new Date(Math.max(...ends));
+
+    let rangeStartH = Math.max(0, earliestStart.getHours() - 1);
+    let rangeEndH = Math.min(24, latestEnd.getHours() + (latestEnd.getMinutes() > 0 ? 2 : 1));
+    // Ensure minimum 4-hour range
+    if (rangeEndH - rangeStartH < 4) rangeEndH = Math.min(24, rangeStartH + 6);
+
+    const rangeStartMin = rangeStartH * 60;
+    const rangeEndMin = rangeEndH * 60;
+    const rangeTotalMin = rangeEndMin - rangeStartMin;
+    const rangeTotalPx = tlMinToPx(rangeTotalMin);
+    const baseMin = rangeStartMin;
+
+    // Compute auto-scroll target: first block's top, minus padding
+    const firstBlockStartPx = tlTimeToPx(earliestStart, baseMin);
+    const scrollTop = Math.max(0, firstBlockStartPx - 40);
+
     // Three-column layout: plans | axis | records
     html+=`<div class="tl-gantt-hdr">
       <div class="tl-gantt-hdr-plan">📋 计划</div>
@@ -1388,12 +1404,11 @@ function renderApp() {
       <div class="tl-gantt-hdr-rec">⏱️ 记录</div>
     </div>`;
 
-    html+=`<div class="tl-gantt-wrap">`;
+    html+=`<div class="tl-gantt-scroll" id="tl-scroll">
+    <div class="tl-gantt-wrap">`;
 
     // --- Plan column ---
     html+=`<div class="tl-gantt-col plan-col" style="height:${rangeTotalPx}px">`;
-    const nowTime = new Date();
-    const baseMin = rangeStartMin;
 
     // Gaps & blocks on plan side
     let planPrevEndMin = rangeStartMin;
@@ -1483,9 +1498,13 @@ function renderApp() {
         html += `<div class="tl-gantt-now" style="top:${tlTimeToPx(nowTime,baseMin).toFixed(1)}px"><div class="tl-gantt-now-inner"></div></div>`;
       }
     }
-    html+=`</div>`;
+    html+=`</div>`; // plan-col / record-col
 
     html+=`</div>`; // tl-gantt-wrap
+    html+=`</div>`; // tl-gantt-scroll
+    html+=`</div>`; // tl-gantt-scroll
+    window._tlScrollTarget = scrollTop;
+    window._tlScrollApplied = false;
   }
   html+=`</div>`;
 
@@ -1580,6 +1599,17 @@ function renderApp() {
   html+=`</div>`;
 
   app.innerHTML=html;
+
+  // Auto-scroll Gantt timeline to first block
+  if (window._tlScrollTarget !== undefined && !window._tlScrollApplied) {
+    window._tlScrollApplied = true;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const s = document.getElementById('tl-scroll');
+        if (s) s.scrollTop = Math.round(window._tlScrollTarget);
+      });
+    });
+  }
 }
 
 // ========== STATS RENDER HELPERS ==========
