@@ -395,8 +395,14 @@ function stopPlan() {
   renderAll();
 }
 
+let planAlertedIds = new Set();
 function cleanupExpiredPlans() {
   if (activePlan && new Date(activePlan.end) <= new Date()) {
+    if (!planAlertedIds.has(activePlan.id)) {
+      planAlertedIds.add(activePlan.id);
+      playPlanChime();
+      try { navigator.vibrate?.([200, 100, 200]); } catch(e) {}
+    }
     activePlan = null;
     persistState();
   }
@@ -453,6 +459,7 @@ function triggerAlert() {
   if (now - lastAlertTime < 60000) return;
   lastAlertTime = now;
   playChime();
+  try { navigator.vibrate?.([300, 150, 300]); } catch(e) {}
   setTimeout(updateAlertUI, 50);
 }
 function playChime() {
@@ -466,6 +473,20 @@ function playChime() {
       osc.connect(g); osc.start(ctx.currentTime+i*0.25); osc.stop(ctx.currentTime+i*0.25+0.5);
     });
   }catch(e){}
+}
+function playPlanChime() {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    // Gentle C-E-G major triad arpeggio (warm "task complete" feel)
+    [523.25, 659.25, 783.99].forEach((freq, i) => {
+      const t = ctx.currentTime + i * 0.3;
+      const osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.value = freq;
+      const g = ctx.createGain(); g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.2, t);
+      g.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
+      osc.connect(g); osc.start(t); osc.stop(t + 0.6);
+    });
+  } catch(e) {}
 }
 function updateAlertUI() {
   document.querySelectorAll('.cat-btn.entertainment').forEach(b=>b.classList.add('alerting'));
