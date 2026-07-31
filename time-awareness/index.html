@@ -1065,168 +1065,64 @@ function getActivePlanRemaining() {
   return Math.max(0,Math.floor((new Date(activePlan.end)-Date.now())/60000));
 }
 
-// ========== TIMELINE V2 BLOCK CONSTRUCTION ==========
+// ========== TIMELINE BLOCK CONSTRUCTION (flat list, no pairing) ==========
 function buildTimelineBlocks() {
   const sessions = getTodaySessions(selectedDate);
-  const plans = sessions.filter(s => s.type === 'plan');
-  const records = sessions.filter(s => s.type === 'record');
-  const pairedRecordIds = new Set();
-  const blocks = [];
-
-  for (const plan of plans) {
-    const planStart = new Date(plan.start);
-    const planEnd = new Date(plan.end);
-    let bestRecord = null;
-    let bestOverlap = 0;
-
-    for (const record of records) {
-      if (pairedRecordIds.has(record.id)) continue;
-      const recStart = new Date(record.start);
-      const recEnd = record.end ? new Date(record.end) : new Date();
-      const overlapStart = Math.max(planStart, recStart);
-      const overlapEnd = Math.min(planEnd, recEnd);
-      const overlap = (overlapEnd - overlapStart) / 60000;
-      if (overlap > bestOverlap) {
-        bestOverlap = overlap;
-        bestRecord = record;
-      }
-    }
-
-    if (bestRecord && bestOverlap > 0) {
-      pairedRecordIds.add(bestRecord.id);
-      blocks.push({ type: 'overlap', plan, record: bestRecord });
-    } else {
-      blocks.push({ type: 'plan-only', plan });
-    }
-  }
-
-  for (const record of records) {
-    if (!pairedRecordIds.has(record.id)) {
-      blocks.push({ type: 'record-only', record });
-    }
-  }
-
-  blocks.sort((a, b) => getBlockStartTime(a) - getBlockStartTime(b));
+  // Each session becomes a standalone block, sorted by start time
+  const blocks = sessions.map(s => ({
+    type: s.type, // 'plan' or 'record'
+    session: s,
+    start: new Date(s.start),
+    end: s.end ? new Date(s.end) : null, // null = active
+  }));
+  blocks.sort((a, b) => a.start - b.start);
   return blocks;
 }
 
-function getBlockStartTime(block) {
-  if (block.type === 'plan-only') return new Date(block.plan.start);
-  if (block.type === 'record-only') return new Date(block.record.start);
-  return new Date(Math.min(new Date(block.plan.start), new Date(block.record.start)));
-}
+// These helper functions are no longer needed for flat timeline
 
-function getBlockEndTime(block) {
-  if (block.type === 'plan-only') return new Date(block.plan.end);
-  if (block.type === 'record-only') {
-    return block.record.end ? new Date(block.record.end) : new Date();
-  }
-  const planEnd = new Date(block.plan.end);
-  const recEnd = block.record.end ? new Date(block.record.end) : new Date();
-  return new Date(Math.max(planEnd, recEnd));
-}
-
-function blockHasActiveRecord(block) {
-  if (block.type === 'overlap') return !block.record.end;
-  if (block.type === 'record-only') return !block.record.end;
-  return false;
-}
-
-// ========== TIMELINE V2 RENDER HELPERS ==========
+// ========== TIMELINE RENDER ==========
 function renderTimelineBlock(block, nowTime) {
-  if (block.type === 'overlap') return renderOverlapBlock(block, nowTime);
-  if (block.type === 'plan-only') return renderPlanOnlyBlock(block);
-  if (block.type === 'record-only') return renderRecordOnlyBlock(block, nowTime);
-  return '';
-}
+  const s = block.session;
+  const cats = block.type === 'plan' ? PLAN_CATEGORIES : RECORD_CATEGORIES;
+  const cat = cats[s.category];
+  const isActive = block.type === 'record' && !s.end;
+  const durMin = isActive
+    ? Math.max(1, (nowTime - block.start) / 60000)
+    : Math.max(1, (block.end - block.start) / 60000);
+  const h = Math.max(40, Math.ceil(durMin * 1.8));
 
-function renderOverlapBlock(block, nowTime) {
-  const plan = block.plan, record = block.record;
-  const planCat = PLAN_CATEGORIES[plan.category];
-  const recCat = RECORD_CATEGORIES[record.category];
-  const planStart = new Date(plan.start), planEnd = new Date(plan.end);
-  const recStart = new Date(record.start);
-  const recEnd = record.end ? new Date(record.end) : new Date();
-  const isActive = !record.end;
-
-  const planDurMin = Math.max(1, (planEnd - planStart) / 60000);
-  const recDurMin = Math.max(1, (recEnd - recStart) / 60000);
-  const offsetMin = (recStart - planStart) / 60000;
-
-  const PX_PER_MIN = 1.8;
-  const planH = Math.max(44, Math.ceil(planDurMin * PX_PER_MIN));
-  const actualH = Math.max(38, Math.ceil(recDurMin * PX_PER_MIN));
-
-  // Position: if record starts before plan, push plan down; otherwise push record down
-  let planTop = 0, recTop = 0;
-  if (offsetMin < 0) {
-    planTop = Math.ceil(-offsetMin * PX_PER_MIN);
-  } else {
-    recTop = Math.ceil(offsetMin * PX_PER_MIN);
-  }
-  const totalH = Math.ceil(Math.max(planTop + planH, recTop + actualH) + 10);
-
-  // NOW line for active records — placed after the recorded portion
-
-  const endStr = isActive ? '进行中' : fmtTime(record.end);
-  const durStr = isActive ? '计时中…' : fmtDuration(Math.round(recDurMin));
-  const trackCls = 'tl-v2-track overlap ' + plan.category + (isActive ? ' ongoing' : '');
-
-  return `<div class="${trackCls}" style="position:relative;min-height:${totalH}px">
-    <div class="tl-v2-plan" style="position:absolute;left:4px;right:4px;top:${planTop}px;min-height:${planH}px;padding:8px 14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <span>${planCat.icon}</span><span>计划：${planCat.name}</span>
-      <span class="tl-v2-time">${fmtTime(plan.start)} – ${fmtTime(plan.end)}</span>
-    </div>
-    <div class="tl-v2-actual ${record.category}" style="position:absolute;left:4px;right:4px;top:${recTop}px;min-height:${actualH}px;padding:8px 14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <span>${recCat.icon} ${recCat.name}</span>
-      <span class="tl-v2-time">${fmtTime(record.start)} – ${endStr}</span>
-      <span class="tl-v2-dur">${durStr}</span>
-      <div class="tl-v2-actions">
-        <button class="tl-action-btn" onclick="event.stopPropagation();editSessionById('${record.id}')">✏️</button>
-        <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${record.id}')">🗑</button>
+  if (block.type === 'plan') {
+    const dur = sessionDuration(s);
+    return `<div class="tl-v2-track plan-only ${s.category}">
+      <div class="tl-v2-plan" style="min-height:${h}px">
+        <span>${cat.icon}</span><span>${cat.name}</span>
+        <span class="tl-v2-time">${fmtTime(s.start)} – ${fmtTime(s.end)}</span>
+        <span class="tl-v2-dur">${fmtDuration(dur)}</span>
+        <span class="tl-v2-noedit">不可编辑</span>
       </div>
-    </div>
-  </div>`;
-}
+    </div>`;
+  }
 
-function renderPlanOnlyBlock(block) {
-  const plan = block.plan;
-  const cat = PLAN_CATEGORIES[plan.category];
-  const dur = sessionDuration(plan);
-  const planDurMin = Math.max(1, (new Date(plan.end) - new Date(plan.start)) / 60000);
-  const h = Math.max(48, planDurMin * 1.8);
-  return `<div class="tl-v2-track plan-only ${plan.category}">
-    <div class="tl-v2-plan" style="min-height:${Math.ceil(h)}px">
-      <span>${cat.icon}</span><span>${cat.name}</span>
-      <span class="tl-v2-time">${fmtTime(plan.start)} – ${fmtTime(plan.end)}</span>
-      <span class="tl-v2-dur">${fmtDuration(dur)}</span>
-      <span class="tl-v2-noedit">不可编辑</span>
-    </div>
-  </div>`;
-}
-
-function renderRecordOnlyBlock(block, nowTime) {
-  const record = block.record;
-  const cat = RECORD_CATEGORIES[record.category];
-  const isActive = !record.end;
-  const now = new Date();
-  const dur = isActive ? Math.max(0, Math.floor((now - new Date(record.start)) / 60000)) : sessionDuration(record);
-  const recDurMin = Math.max(1, isActive ? (now - new Date(record.start)) / 60000 : (new Date(record.end) - new Date(record.start)) / 60000);
-  const h = Math.max(40, Math.ceil(recDurMin * 1.8));
-  const endStr = isActive ? '进行中' : fmtTime(record.end);
-  const durStr = isActive ? '计时中…' : fmtDuration(dur);
-  const cls = 'tl-v2-track record-only ' + record.category + (isActive ? ' ongoing' : '');
+  // Record block
+  const endStr = isActive ? '进行中' : fmtTime(s.end);
+  const durStr = isActive ? '计时中…' : fmtDuration(Math.round(durMin));
+  const cls = 'tl-v2-track record-only ' + s.category + (isActive ? ' ongoing' : '');
   return `<div class="${cls}">
     <div class="tl-v2-actual" style="min-height:${h}px">
       <span>${cat.icon} ${cat.name}</span>
-      <span class="tl-v2-time">${fmtTime(record.start)} – ${endStr}</span>
+      <span class="tl-v2-time">${fmtTime(s.start)} – ${endStr}</span>
       <span class="tl-v2-dur">${durStr}</span>
       <div class="tl-v2-actions">
-        <button class="tl-action-btn" onclick="event.stopPropagation();editSessionById('${record.id}')">✏️</button>
-        <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${record.id}')">🗑</button>
+        <button class="tl-action-btn" onclick="event.stopPropagation();editSessionById('${s.id}')">✏️</button>
+        <button class="tl-action-btn danger" onclick="event.stopPropagation();if(confirm('删除这条记录？'))deleteSession('${s.id}')">🗑</button>
       </div>
     </div>
   </div>`;
+}
+
+function renderNowLine() {
+  return `<div class="tl-v2-now"><div class="tl-v2-now-line"><span class="tl-v2-now-label">NOW</span></div></div>`;
 }
 
 function renderGap(minutes) {
@@ -1234,10 +1130,6 @@ function renderGap(minutes) {
   const m = minutes % 60;
   const text = h > 0 ? `闲置 · ${h}小时${m > 0 ? m + '分' : ''}` : `闲置 · ${m}分`;
   return `<div class="tl-v2-gap"><span class="tl-v2-gap-dot"></span>${text}</div>`;
-}
-
-function renderNowLine() {
-  return `<div class="tl-v2-now"><div class="tl-v2-now-line"><span class="tl-v2-now-label">NOW</span></div></div>`;
 }
 
 // ========== RENDER ==========
@@ -1406,17 +1298,19 @@ function renderApp() {
   } else {
     html+=`<div class="timeline-v2">`;
     const nowTime = new Date();
-    let prevEnd = null;
+    let prevEnd = new Date(0);
     let nowInserted = false;
     let lastHour = -1;
 
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i];
-      const blockStart = getBlockStartTime(block);
-      const blockEnd = getBlockEndTime(block);
+      const blockStart = block.start;
+      // For active records, use now as the visual end; for others use stored end
+      const blockEnd = (block.type === 'record' && !block.session.end) ? nowTime : (block.end || nowTime);
+      const isActiveBlock = block.type === 'record' && !block.session.end;
 
-      // Gap before this block (skip if active record's prevEnd stretches past this block's start)
-      if (prevEnd && blockStart > prevEnd) {
+      // Gap before this block
+      if (blockStart > prevEnd) {
         const gapMin = Math.round((blockStart - prevEnd) / 60000);
         if (gapMin >= 3) {
           if (isTodayView && !nowInserted && nowTime > prevEnd && nowTime <= blockStart) {
@@ -1427,8 +1321,8 @@ function renderApp() {
         }
       }
 
-      // NOW line before this block (if it starts after now) — only for today
-      if (isTodayView && !nowInserted && prevEnd && nowTime <= blockStart && nowTime > prevEnd) {
+      // NOW in small gap (<3min) or at boundary
+      if (isTodayView && !nowInserted && nowTime > prevEnd && nowTime < blockStart) {
         html += renderNowLine();
         nowInserted = true;
       }
@@ -1442,13 +1336,12 @@ function renderApp() {
 
       html += renderTimelineBlock(block, nowTime);
 
-      // If this block has an active record, NOW goes right after it
-      if (isTodayView && !nowInserted && blockHasActiveRecord(block)) {
+      // NOW after active record block
+      if (isTodayView && !nowInserted && isActiveBlock) {
         html += renderNowLine();
         nowInserted = true;
       }
 
-      // Cap prevEnd to avoid propagating active-record "now" time forward
       prevEnd = blockEnd;
     }
 
