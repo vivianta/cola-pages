@@ -1,7 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <!-- Pot -->
-  <path d="M12 38h24l-3 8H15l-3-8z" fill="#c4c0b8"/>
-  <rect x="9" y="36" width="30" height="3" rx="1.5" fill="#b0aca4"/>
-  <!-- Tiny stump -->
-  <rect x="22" y="32" width="4" height="5" rx="1.5" fill="#a09890"/>
+  <!-- Ground -->
+  <ellipse cx="24" cy="40" rx="20" ry="4" fill="#8b7355"/>
+  <!-- Stump -->
+  <rect x="21" y="30" width="6" height="10" rx="2" fill="#8b6914"/>
+  <rect x="21" y="30" width="6" height="3" rx="1.5" fill="#a08030"/>
+  <!-- Growth rings on top -->
+  <ellipse cx="24" cy="30" rx="3" ry="1" fill="none" stroke="#7a5a10" stroke-width="0.8"/>
+  <ellipse cx="24" cy="30" rx="1.5" ry="0.5" fill="none" stroke="#7a5a10" stroke-width="0.6"/>
 </svg>

@@ -1,16 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <!-- Pot -->
-  <path d="M12 38h24l-3 8H15l-3-8z" fill="#c4956a"/>
-  <rect x="9" y="36" width="30" height="3" rx="1.5" fill="#b8875e"/>
+  <!-- Ground -->
+  <ellipse cx="24" cy="40" rx="20" ry="4" fill="#8b7355"/>
   <!-- Stem -->
-  <line x1="24" y1="18" x2="24" y2="36" stroke="#7a7a2e" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="24" y1="18" x2="24" y2="40" stroke="#7a7a2e" stroke-width="2.5" stroke-linecap="round"/>
   <!-- Left leaf - yellowing -->
   <ellipse cx="17" cy="23" rx="6" ry="4" fill="#b8b040" transform="rotate(-25,17,23)"/>
-  <ellipse cx="17" cy="23" rx="6" ry="4" fill="none" stroke="#a0a038" stroke-width="0.8" transform="rotate(-25,17,23)"/>
   <!-- Right leaf - still greenish -->
   <ellipse cx="30" cy="21" rx="6" ry="4" fill="#8aaa40" transform="rotate(25,30,21)"/>
-  <ellipse cx="30" cy="21" rx="6" ry="4" fill="none" stroke="#7a9a38" stroke-width="0.8" transform="rotate(25,30,21)"/>
   <!-- Top leaf - yellow -->
   <ellipse cx="24" cy="17" rx="5" ry="3.5" fill="#d4c050" transform="rotate(3,24,17)"/>
-  <ellipse cx="24" cy="17" rx="5" ry="3.5" fill="none" stroke="#c4b040" stroke-width="0.8" transform="rotate(3,24,17)"/>
 </svg>
