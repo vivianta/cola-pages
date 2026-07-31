@@ -1269,39 +1269,6 @@ function renderApp() {
     </div>
   </div>`;
 
-  // 7-day strip
-  (()=>{
-    const dayCols=[];
-    let weekTotal=0, maxDayDur=0;
-    for(let i=6;i>=0;i--){
-      const d=shiftDate(todayStr(),-i);
-      const dur=computeDayTotal(d);
-      dayCols.push({date:d,dur,weekday:getWeekday(d),tree:getTreeIcon(d)});
-      weekTotal+=dur;
-      if(dur>maxDayDur) maxDayDur=dur;
-    }
-    html+=`<div class="week-strip">
-      <div class="week-strip-header">
-        <span class="label">过去 7 天</span>
-        <span class="total">本周 ${fmtDuration(weekTotal)}</span>
-      </div>
-      <div class="week-strip-days">`;
-    for(const col of dayCols){
-      const isToday=isSameDate(col.date,todayStr());
-      const isSelected=isSameDate(col.date,selectedDate);
-      const heightPct=maxDayDur>0?Math.max(4,Math.round(col.dur/maxDayDur*60)):4;
-      const cls=['week-day',isToday?'today':'',isSelected?'selected':''].filter(Boolean).join(' ');
-      const iconBase='https://vivianta.github.io/cola-pages/time-awareness/';
-      html+=`<div class="${cls}" onclick="selectedDate='${col.date}';renderAll()">
-        <img class="tree-icon" src="${iconBase}${col.tree}" alt="" onerror="this.style.display='none'">
-        <div class="bar-col" style="height:${heightPct}px"></div>
-        <div class="day-name">周${col.weekday}</div>
-        <div class="day-dur">${col.dur>0?fmtDuration(col.dur):''}</div>
-      </div>`;
-    }
-    html+=`</div></div>`;
-  })();
-
   // Calendar overlay
   if(showCalendar){
     html+=renderCalendar();
@@ -1390,6 +1357,40 @@ function renderApp() {
 
   // === TIMELINE V2 — Vertical Overlay ===
   html+=`<div class="tab-panel ${currentTab==='timeline'?'active':''}" id="panel-timeline">`;
+
+  // 7-day strip inside timeline
+  (()=>{
+    const dayCols=[];
+    let weekTotal=0, maxDayDur=0;
+    for(let i=6;i>=0;i--){
+      const d=shiftDate(todayStr(),-i);
+      const dur=computeDayTotal(d);
+      dayCols.push({date:d,dur,weekday:getWeekday(d),tree:getTreeIcon(d)});
+      weekTotal+=dur;
+      if(dur>maxDayDur) maxDayDur=dur;
+    }
+    html+=`<div class="week-strip">
+      <div class="week-strip-header">
+        <span class="label">过去 7 天</span>
+        <span class="total">本周 ${fmtDuration(weekTotal)}</span>
+      </div>
+      <div class="week-strip-days">`;
+    for(const col of dayCols){
+      const isToday=isSameDate(col.date,todayStr());
+      const isSelected=isSameDate(col.date,selectedDate);
+      const heightPct=maxDayDur>0?Math.max(4,Math.round(col.dur/maxDayDur*60)):4;
+      const cls=['week-day',isToday?'today':'',isSelected?'selected':''].filter(Boolean).join(' ');
+      const iconBase='https://vivianta.github.io/cola-pages/time-awareness/';
+      html+=`<div class="${cls}" onclick="selectedDate='${col.date}';renderAll()">
+        <img class="tree-icon" src="${iconBase}${col.tree}" alt="" onerror="this.style.display='none'">
+        <div class="bar-col" style="height:${heightPct}px"></div>
+        <div class="day-name">周${col.weekday}</div>
+        <div class="day-dur">${col.dur>0?fmtDuration(col.dur):''}</div>
+      </div>`;
+    }
+    html+=`</div></div>`;
+  })();
+
   const blocks = buildTimelineBlocks();
   if (blocks.length === 0) {
     const emptyMsg = isTodayView ? '今天还没有记录' : `${fmtDateFull(selectedDate)} 没有记录`;
