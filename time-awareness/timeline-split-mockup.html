@@ -13,7 +13,7 @@
   .mode-toggle button { flex:1; padding:8px; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; background:transparent; color:#9ca3af; transition:.15s; }
   .mode-toggle button.active { background:#fff; color:#333; box-shadow:0 1px 3px rgba(0,0,0,.1); }
 
-  .top-block { background:#fff; border-radius:12px; padding:12px 16px; margin-bottom:10px; min-height:56px; display:flex; align-items:center; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,.03); }
+  .top-block { background:#fff; border-radius:12px; padding:14px 16px; margin-bottom:10px; display:flex; flex-direction:column; gap:8px; box-shadow:0 1px 3px rgba(0,0,0,.03); }
   .top-block .icon { font-size:22px; }
   .top-block .text { font-size:14px; font-weight:600; }
   .top-block .sub  { font-size:11px; color:#9ca3af; }
@@ -21,6 +21,16 @@
   .top-block .timer-label { margin-left:auto; text-align:right; }
   .top-block .timer-label .timer-cat { font-size:12px; color:#9ca3af; }
   .top-block .timer-label .timer-val { font-size:28px; font-weight:700; color:#4A90D9; font-variant-numeric:tabular-nums; }
+  .top-block .status-row { display:flex; align-items:center; gap:6px; }
+  .top-block .plan-info { display:flex; align-items:center; gap:8px; padding:8px 0; }
+  .top-block .plan-info .plan-emoji { font-size:20px; }
+  .top-block .plan-info .plan-detail { font-size:13px; font-weight:600; }
+  .top-block .plan-info .plan-time { font-size:12px; color:#9ca3af; }
+  .top-block .plan-tip { font-size:10px; color:#b0b0b0; padding:4px 0 2px; }
+  .top-block .end-btn { margin-top:2px; padding:8px; border-radius:8px; border:1px solid #e8c0c0; background:#fff5f5; color:#c04040; font-size:12px; text-align:center; cursor:pointer; width:100%; }
+  .top-block .record-status { display:flex; align-items:center; gap:6px; font-size:12px; color:#9ca3af; }
+  .top-block .record-timer { font-size:36px; font-weight:700; color:#4A90D9; text-align:center; font-variant-numeric:tabular-nums; }
+  .top-block .record-cat { display:flex; align-items:center; justify-content:center; gap:6px; font-size:14px; font-weight:600; }
   .pause-indicator { display:inline-block; width:6px; height:6px; border-radius:50%; background:#4A90D9; margin-right:4px; animation:blink 1s infinite; }
   @keyframes blink { 0%,100%{opacity:0} 50%{opacity:1} }
 
@@ -97,8 +107,10 @@
 
   <!-- Top block — switches content -->
   <div class="top-block" id="topBlock">
-    <span class="icon">📋</span>
-    <div><div class="text">计划模式</div><div class="sub">选择分类 · 每次 1 小时 · 新计划自动截断上一个</div></div>
+    <div class="status-row"><span class="icon">📋</span><span class="text">当前计划</span></div>
+    <div class="plan-info"><span class="plan-emoji">💼</span><span class="plan-detail">工作/学习</span><span class="plan-time">17:20 – 18:20 · 剩余 58分钟</span></div>
+    <div class="plan-tip">固定 1 小时 · 不可编辑 · 新计划自动截断上一个</div>
+    <button class="end-btn">⏹️ 结束当前计划</button>
   </div>
 
   <!-- Category buttons — switches content -->
@@ -149,7 +161,7 @@ function switchMode(mode) {
 
   if (mode === 'plan') {
     btns[0].classList.add('active'); btns[1].classList.remove('active');
-    topBlock.innerHTML = '<span class="icon">📋</span><div><div class="text">计划模式</div><div class="sub">选择分类 · 每次 1 小时 · 新计划自动截断上一个</div></div>';
+    topBlock.innerHTML = '<div class="status-row"><span class="icon">📋</span><span class="text">当前计划</span></div><div class="plan-info"><span class="plan-emoji">💼</span><span class="plan-detail">工作/学习</span><span class="plan-time">17:20 – 18:20 · 剩余 58分钟</span></div><div class="plan-tip">固定 1 小时 · 不可编辑 · 新计划自动截断上一个</div><button class="end-btn">⏹️ 结束当前计划</button>';
     catRow.innerHTML = `
       <button class="cat-btn work active"><span class="emoji">💼</span>工作</button>
       <button class="cat-btn house"><span class="emoji">🏠</span>家务</button>
@@ -159,7 +171,7 @@ function switchMode(mode) {
       <button class="cat-btn idle"><span class="emoji">🕊️</span>空闲</button>`;
   } else {
     btns[1].classList.add('active'); btns[0].classList.remove('active');
-    topBlock.innerHTML = '<span class="icon">⏱️</span><div><div class="text">记录模式</div><div class="sub">点击分类开始计时</div></div><div class="timer-label"><div class="timer-cat"><span class="pause-indicator"></span> 💼 工作中</div><div class="timer-val">00:32:15</div></div>';
+    topBlock.innerHTML = '<div class="status-row"><span class="icon">⏱️</span><span class="text">正在记录</span></div><div class="record-timer">03:37:48</div><div class="record-cat"><span>💼</span> 工作/学习</div><button class="end-btn">⏹️ 停止记录</button>';
     catRow.innerHTML = `
       <button class="cat-btn work"><span class="emoji">💼</span>工作</button>
       <button class="cat-btn house"><span class="emoji">🏠</span>家务</button>
