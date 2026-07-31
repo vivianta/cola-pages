@@ -415,6 +415,11 @@ body {
   50% { box-shadow: 0 2px 18px rgba(0,0,0,0.28); }
 }
 
+.tl-v2-track.plan-only.truncated .tl-v2-plan {
+  border-style: dashed; border-color: var(--text-muted);
+  background: #fafafa; opacity: 0.7;
+}
+
 @media (max-width: 400px) {
   .tl-v2-plan, .tl-v2-actual { font-size: 12px; padding: 8px 10px; }
   .tl-v2-dur { font-size: 11px; }
@@ -1068,14 +1073,30 @@ function getActivePlanRemaining() {
 // ========== TIMELINE BLOCK CONSTRUCTION (flat list, no pairing) ==========
 function buildTimelineBlocks() {
   const sessions = getTodaySessions(selectedDate);
-  // Each session becomes a standalone block, sorted by start time
   const blocks = sessions.map(s => ({
     type: s.type, // 'plan' or 'record'
     session: s,
     start: new Date(s.start),
     end: s.end ? new Date(s.end) : null, // null = active
+    truncated: false,
   }));
   blocks.sort((a, b) => a.start - b.start);
+
+  // Truncate overlapping blocks: if block A ends after block B starts, truncate A to B
+  for (let i = 0; i < blocks.length; i++) {
+    const a = blocks[i];
+    if (a.type === 'plan' && a.end) {
+      for (let j = i + 1; j < blocks.length; j++) {
+        const b = blocks[j];
+        if (a.end > b.start) {
+          a.end = new Date(b.start);
+          a.truncated = true;
+          break;
+        }
+      }
+    }
+  }
+
   return blocks;
 }
 
@@ -1093,12 +1114,13 @@ function renderTimelineBlock(block, nowTime) {
   const h = Math.max(40, Math.ceil(durMin * 1.8));
 
   if (block.type === 'plan') {
-    const dur = sessionDuration(s);
-    return `<div class="tl-v2-track plan-only ${s.category}">
+    const dur = Math.round((block.end - block.start) / 60000);
+    const durStr = block.truncated ? `${fmtDuration(dur)} · 已中断` : fmtDuration(dur);
+    return `<div class="tl-v2-track plan-only ${s.category}${block.truncated?' truncated':''}">
       <div class="tl-v2-plan" style="min-height:${h}px">
         <span>${cat.icon}</span><span>${cat.name}</span>
-        <span class="tl-v2-time">${fmtTime(s.start)} – ${fmtTime(s.end)}</span>
-        <span class="tl-v2-dur">${fmtDuration(dur)}</span>
+        <span class="tl-v2-time">${fmtTime(s.start)} – ${fmtTime(block.end)}</span>
+        <span class="tl-v2-dur">${durStr}</span>
         <span class="tl-v2-noedit">不可编辑</span>
       </div>
     </div>`;
