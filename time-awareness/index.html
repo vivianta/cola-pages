@@ -48,70 +48,83 @@ body {
 .sync-indicator.syncing .dot { animation: blink 0.6s infinite; background: #F59E0B; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
+/* Mode toggle pill */
 .mode-toggle {
-  display: flex; gap: 0; background: var(--surface); border-radius: var(--radius);
-  padding: 4px; margin-bottom: 16px; box-shadow: var(--shadow);
+  display: flex; gap: 0; margin-bottom: 10px;
+  background: #e5e7eb; border-radius: 10px; padding: 3px;
 }
 .mode-btn {
-  flex: 1; padding: 10px; border: none; background: transparent; border-radius: var(--radius-sm);
-  font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--font);
-  transition: all 0.15s; color: var(--text-muted);
+  flex: 1; padding: 8px; border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  background: transparent; color: #9ca3af; transition: .15s;
 }
-.mode-btn.active { background: var(--text); color: white; }
+.mode-btn.active { background: #fff; color: #333; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
 
-.status-card {
-  background: var(--surface); border-radius: var(--radius); padding: 16px 20px;
-  margin-bottom: 16px; box-shadow: var(--shadow); text-align: center;
-  border: 2px solid transparent; transition: all 0.3s;
+/* Top block card */
+.top-block {
+  background: #fff; border-radius: 12px; padding: 14px 16px 12px;
+  margin-bottom: 10px; display: flex; flex-direction: column;
+  align-items: center; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.03);
+  border: 1.5px solid #e5e7eb;
 }
-.status-card.active { border-color: var(--border); }
-.status-card .status-label { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
-.status-card .status-main { font-size: 17px; font-weight: 700; }
-.status-card .status-time { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
-.status-card .status-bar {
-  height: 4px; background: var(--bg); border-radius: 2px; margin-top: 12px; overflow: hidden;
+.top-block-status { font-size: 12px; color: #9ca3af; display: flex; align-items: center; gap: 4px; }
+.top-block-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.top-block-title .top-block-emoji { font-size: 20px; }
+.top-block-time { font-size: 13px; color: #9ca3af; }
+.top-block-tip { font-size: 10px; color: #b0b0b0; }
+.top-block-timer { font-size: 36px; font-weight: 700; font-variant-numeric: tabular-nums; color: #333; }
+.top-block-cat { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.top-block-bar { width: 100%; height: 4px; background: #e8ecf0; border-radius: 2px; overflow: hidden; }
+.top-block-bar-fill { height: 100%; border-radius: 2px; transition: width .5s; }
+.top-block-end {
+  padding: 8px 32px; border-radius: 20px; border: 1px solid #dcdcdc;
+  background: #fff; color: #9ca3af; font-size: 12px; cursor: pointer;
 }
-.status-card .status-bar-fill { height: 100%; border-radius: 2px; transition: width 1s linear; }
-.status-card.empty .status-main { color: var(--text-muted); font-size: 15px; font-weight: 500; }
-.status-card .stop-btn {
-  margin-top: 10px; font-size: 12px; padding: 5px 14px; border: 1.5px solid var(--border);
-  border-radius: 20px; background: var(--surface); color: var(--text-secondary);
-  cursor: pointer; font-family: var(--font); font-weight: 600;
+.pause-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: #4a90d9; margin-right: 4px; animation: blink 1s infinite;
 }
 
-.category-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;
+/* Category row */
+.cat-row { display: flex; gap: 6px; margin-bottom: 10px; }
+.cat-row .cat-btn {
+  flex: 1; padding: 10px 3px; border-radius: 10px; border: 1.5px solid #e5e7eb;
+  background: #fff; font-size: 10px; cursor: pointer; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  color: #6b7280; transition: .15s;
 }
-.cat-btn {
-  background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius);
-  padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.15s;
-  box-shadow: var(--shadow); position: relative;
-}
-.cat-btn:active { transform: scale(0.97); }
-.cat-btn .cat-icon { font-size: 26px; display: block; margin-bottom: 4px; }
-.cat-btn .cat-name { font-size: 13px; font-weight: 600; color: var(--text); }
-.cat-btn.active { transform: scale(1.03); box-shadow: var(--shadow-md); }
+.cat-row .cat-btn .cat-emoji { font-size: 17px; }
+.cat-row .cat-btn:active { transform: scale(.96); }
+.cat-btn.alerting { animation: alertPulse 0.8s ease-in-out infinite; }
 
-/* Plan mode: pale backgrounds matching plan blocks */
-.mode-plan .cat-btn.work          { background: #f5f8ff; border-color: #c8d4ec; color: #8a98b4; }
-.mode-plan .cat-btn.chores        { background: #f8f4ff; border-color: #d4c8e8; color: #a090b8; }
-.mode-plan .cat-btn.exercise      { background: #fff8f4; border-color: #e8d0b8; color: #c09878; }
-.mode-plan .cat-btn.recharge      { background: #f5faf5; border-color: #bcd0bc; color: #8aaa8a; }
-.mode-plan .cat-btn.entertainment { background: #fff4f4; border-color: #ecc8c8; color: #c08888; }
-.mode-plan .cat-btn.active        { font-weight: 700; }
+/* Plan buttons: pale */
+.cat-btn.work          { border-color: #c8d4ec; color: #6a80a8; background: #f5f8ff; }
+.cat-btn.chores        { border-color: #d4c8e8; color: #8a6aaa; background: #f8f4ff; }
+.cat-btn.exercise      { border-color: #e8d0b8; color: #c09878; background: #fff8f4; }
+.cat-btn.recharge      { border-color: #bcd0bc; color: #8aaa8a; background: #f5faf5; }
+.cat-btn.entertainment { border-color: #ecc8c8; color: #c08888; background: #fff4f4; }
+.cat-btn.unrecorded    { border-color: #dcdcdc; color: #b0b0b0; background: #fafafa; }
+.cat-btn.work.active          { border-color: #3366cc; color: #3366cc; background: #dce8ff; }
+.cat-btn.chores.active        { border-color: #7733aa; color: #7733aa; background: #e8dcf6; }
+.cat-btn.exercise.active      { border-color: #cc6622; color: #cc6622; background: #ffe8d8; }
+.cat-btn.recharge.active      { border-color: #338833; color: #338833; background: #dcf0dc; }
+.cat-btn.entertainment.active { border-color: #cc3333; color: #cc3333; background: #ffe0e0; }
+.cat-btn.unrecorded.active    { border-color: #999; color: #888; background: #e8e8e8; }
 
-/* Record mode: deeper colors matching record blocks */
-.mode-record .cat-btn.work          { background: #d0e0ff; border-color: #3366cc; color: #1a3a6a; }
-.mode-record .cat-btn.chores        { background: #e0d0f4; border-color: #7733aa; color: #4a2a6a; }
-.mode-record .cat-btn.exercise      { background: #ffe0c8; border-color: #cc6622; color: #804020; }
-.mode-record .cat-btn.recharge      { background: #c8e8c8; border-color: #338833; color: #1a4a1a; }
-.mode-record .cat-btn.entertainment { background: #ffd0d0; border-color: #cc3333; color: #701818; }
-.mode-record .cat-btn.active        { font-weight: 700; border-width: 3px; }
+/* Record buttons: deep */
+.cat-btn.rec-work          { border-color: #4a7abf; color: #1a3a6a; background: #d0e0ff; }
+.cat-btn.rec-chores        { border-color: #8855c0; color: #4a2a6a; background: #e0d0f4; }
+.cat-btn.rec-exercise      { border-color: #e08840; color: #804020; background: #ffe0c8; }
+.cat-btn.rec-recharge      { border-color: #4a9a4a; color: #1a4a1a; background: #c8e8c8; }
+.cat-btn.rec-entertainment { border-color: #d04848; color: #701818; background: #ffd0d0; }
+.cat-btn.rec-unrecorded    { border-color: #b0b0b0; color: #707070; background: #f0f0f0; }
+.cat-btn.rec-work.active          { border-color: #1a3a6a; color: #fff; background: #3366cc; }
+.cat-btn.rec-chores.active        { border-color: #4a2a6a; color: #fff; background: #7733aa; }
+.cat-btn.rec-exercise.active      { border-color: #804020; color: #fff; background: #cc6622; }
+.cat-btn.rec-recharge.active      { border-color: #1a4a1a; color: #fff; background: #338833; }
+.cat-btn.rec-entertainment.active { border-color: #701818; color: #fff; background: #cc3333; }
+.cat-btn.rec-unrecorded.active    { border-color: #666; color: #fff; background: #999; }
 
-.cat-btn.entertainment.alerting {
-  animation: alertPulse 0.8s ease-in-out infinite;
-  border-color: #E04050;
-}
 @keyframes alertPulse {
   0%, 100% { background: var(--entertainment-bg); }
   50% { background: #FEE2E5; }
@@ -289,9 +302,8 @@ body {
 @keyframes toastOut { to { opacity: 0; transform: translateX(-50%) translateY(10px); } }
 
 @media (max-width: 400px) {
-  .cat-btn { padding: 12px 6px; }
-  .cat-btn .cat-icon { font-size: 22px; }
-  .cat-btn .cat-name { font-size: 12px; }
+  .cat-row .cat-btn { padding: 8px 2px; }
+  .cat-row .cat-btn .cat-emoji { font-size: 15px; }
 }
 
 /* ===== Timeline V2 — Vertical Overlay ===== */
@@ -516,18 +528,18 @@ body {
 
 /* ===== Date Navigation ===== */
 .date-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 4px 0 8px; gap: 8px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 4px 0 8px; gap: 12px;
 }
 .nav-arrow {
-  width: 36px; height: 36px; border: none; background: var(--surface);
-  border-radius: 50%; font-size: 18px; cursor: pointer; display: flex;
-  align-items: center; justify-content: center; box-shadow: var(--shadow);
-  color: var(--text-secondary); transition: all 0.15s; flex-shrink: 0;
+  width: 32px; height: 32px; border: none; background: #e5e7eb;
+  border-radius: 50%; font-size: 14px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0;
+  color: #6b7280; transition: all 0.15s;
 }
-.nav-arrow:active { transform: scale(0.93); background: var(--bg); }
+.nav-arrow:active { transform: scale(0.93); background: #d1d5db; }
 .date-center {
-  flex: 1; text-align: center; cursor: pointer; user-select: none;
+  text-align: center; cursor: pointer; user-select: none;
 }
 .date-center .date-full { font-size: 17px; font-weight: 700; color: var(--text); }
 .date-center .date-weekday { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
@@ -1239,13 +1251,6 @@ function renderApp() {
   const app=document.getElementById('app');
   const {planStats,recordStats,planTotal,recordTotal}=getTodayStats();
 
-  let catDurations={};
-  for(const k of Object.keys(RECORD_CATEGORIES)) catDurations[k]=recordStats[k]||0;
-  if(activeRecord){
-    const elapsed=Math.floor((Date.now()-new Date(activeRecord.start).getTime())/60000);
-    catDurations[activeRecord.category]=(catDurations[activeRecord.category]||0)+elapsed;
-  }
-
   const isTodayView = isSameDate(selectedDate, todayStr());
   let html='';
 
@@ -1257,76 +1262,67 @@ function renderApp() {
   // Mode toggle
   html+=`<div class="mode-toggle">
     <button class="mode-btn ${currentMode==='plan'?'active':''}" onclick="currentMode='plan';renderAll()">📋 计划</button>
-    <button class="mode-btn ${currentMode==='record'?'active':''}" onclick="currentMode='record';renderAll()">⏱ 记录</button>
+    <button class="mode-btn ${currentMode==='record'?'active':''}" onclick="currentMode='record';renderAll()">⏱️ 记录</button>
   </div>`;
 
-  // === PLAN MODE ===
+  // === TOP BLOCK ===
   if(currentMode==='plan'){
     if(activePlan){
       const cat=PLAN_CATEGORIES[activePlan.category];
       const remaining=getActivePlanRemaining();
       const pct=Math.min(100,Math.round((PLAN_DURATION_MIN-remaining)/PLAN_DURATION_MIN*100));
-      html+=`<div class="status-card active" style="border-color:${cat.color}">
-        <div class="status-label">📋 当前计划</div>
-        <div class="status-main" style="color:${cat.color}">${cat.icon} ${cat.name}</div>
-        <div class="status-time">${fmtTime(activePlan.start)} – ${fmtTime(activePlan.end)} ・ 剩余 ${fmtDuration(remaining)}</div>
-        <div class="status-bar"><div class="status-bar-fill" style="width:${pct}%;background:${cat.color}"></div></div>
-        <button class="stop-btn" onclick="stopPlan()">结束当前计划</button>
+      html+=`<div class="top-block" style="border-color:${cat.color}">
+        <div class="top-block-status">📋 当前计划</div>
+        <div class="top-block-title"><span class="top-block-emoji">${cat.icon}</span>${cat.name}</div>
+        <div class="top-block-time">${fmtTime(activePlan.start)} – ${fmtTime(activePlan.end)} · 剩余 ${fmtDuration(remaining)}</div>
+        <div class="top-block-bar"><div class="top-block-bar-fill" style="width:${pct}%;background:${cat.color}"></div></div>
+        <button class="top-block-end" onclick="stopPlan()">结束当前计划</button>
       </div>`;
     }else{
-      html+=`<div class="status-card empty">
-        <div class="status-label">📋 计划模式</div>
-        <div class="status-main">选择分类开始 1 小时计划</div>
+      html+=`<div class="top-block" style="border-color:#e5e7eb">
+        <div class="top-block-status">📋 计划模式</div>
+        <div class="top-block-title" style="color:#9ca3af">选择分类开始 1 小时计划</div>
+        <div class="top-block-tip">固定 1 小时 · 不可编辑 · 新计划自动截断上一个</div>
       </div>`;
     }
-    html+=`<div class="category-grid mode-plan">`;
-    for(const[key,cat] of Object.entries(PLAN_CATEGORIES)){
-      const isActive=activePlan&&activePlan.category===key;
-      html+=`<button class="cat-btn ${key}${isActive?' active':''}" onclick="startPlan('${key}')">
-        <span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.name}</span>
-      </button>`;
-    }
-    html+=`</div>`;
-    html+=`<div style="text-align:center;font-size:12px;color:var(--text-muted);margin-bottom:16px">固定 1 小时 · 不可编辑 · 新计划自动截断上一个</div>`;
-  }
-
-  // === RECORD MODE ===
-  if(currentMode==='record'){
+  }else{
     if(activeRecord){
       const cat=RECORD_CATEGORIES[activeRecord.category];
       const elapsed=Math.floor((Date.now()-recordStartTime)/1000);
       const h=Math.floor(elapsed/3600),m=Math.floor((elapsed%3600)/60),s=elapsed%60;
-      html+=`<div class="status-card active" style="border-color:${cat.color}">
-        <div class="status-label">⏱ 正在记录</div>
-        <div class="status-main" style="font-size:44px;font-weight:700;letter-spacing:-1px" id="record-timer">${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</div>
-        <div class="status-time" style="color:${cat.color};font-weight:600">${cat.icon} ${cat.name}</div>
-        <button class="stop-btn" onclick="endRecord();renderAll()">⏹ 停止记录</button>
+      html+=`<div class="top-block" style="border-color:${cat.color}">
+        <div class="top-block-status"><span class="pause-dot"></span>⏱️ 正在记录</div>
+        <div class="top-block-timer" id="record-timer">${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</div>
+        <div class="top-block-cat">${cat.icon} ${cat.name}</div>
+        <div class="top-block-bar"><div class="top-block-bar-fill" style="width:100%;background:${cat.color}"></div></div>
+        <button class="top-block-end" onclick="endRecord();renderAll()">停止记录</button>
       </div>`;
     }else{
-      html+=`<div class="status-card empty">
-        <div class="status-label">⏱ 记录模式</div>
-        <div class="status-main">选择分类开始记录</div>
+      html+=`<div class="top-block" style="border-color:#e5e7eb">
+        <div class="top-block-status">⏱️ 记录模式</div>
+        <div class="top-block-title" style="color:#9ca3af">选择分类开始记录</div>
       </div>`;
     }
-    html+=`<div class="category-grid mode-record">`;
-    for(const[key,cat] of Object.entries(RECORD_CATEGORIES)){
-      const isActive=activeRecord&&activeRecord.category===key;
-      let cls=`cat-btn ${key}${isActive?' active':''}`;
-      if(key==='entertainment'&&isActive&&activeRecord){
-        const elapsed=Math.floor((Date.now()-new Date(activeRecord.start).getTime())/60000);
-        if(elapsed>=ENTERTAINMENT_ALERT_MIN) cls+=' alerting';
-      }
-      const durStr=catDurations[key]>0?fmtDuration(catDurations[key]):'';
-      html+=`<button class="${cls}" onclick="${isActive?'endRecord();renderAll()':`startRecord('${key}')`}">
-        <span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.name}</span>
-        ${durStr?`<span style="display:block;font-size:11px;color:var(--text-muted);margin-top:2px">${durStr}</span>`:''}
-      </button>`;
-    }
-    html+=`</div>`;
-    if(activeRecord&&activeRecord.category==='entertainment'){
-      html+=`<div style="text-align:center;font-size:12px;color:var(--entertainment);margin-bottom:16px">消遣超过 20 分钟会触发提醒</div>`;
-    }
   }
+
+  // === CATEGORY BUTTONS (single row) ===
+  const isPlan = currentMode === 'plan';
+  const cats = isPlan ? PLAN_CATEGORIES : RECORD_CATEGORIES;
+  html+=`<div class="cat-row">`;
+  for(const[key, cat] of Object.entries(cats)){
+    const isActive = isPlan ? (activePlan&&activePlan.category===key) : (activeRecord&&activeRecord.category===key);
+    const clsKey = isPlan ? key : ('rec-'+key);
+    let cls = `cat-btn ${clsKey}${isActive?' active':''}`;
+    if(!isPlan && key==='entertainment' && isActive && activeRecord){
+      const elapsed2=Math.floor((Date.now()-new Date(activeRecord.start).getTime())/60000);
+      if(elapsed2>=ENTERTAINMENT_ALERT_MIN) cls+=' alerting';
+    }
+    const click = isPlan ? `startPlan('${key}')` : (isActive ? `endRecord();renderAll()` : `startRecord('${key}')`);
+    html+=`<button class="${cls}" onclick="${click}">
+      <span class="cat-emoji">${cat.icon}</span><span>${cat.name}</span>
+    </button>`;
+  }
+  html+=`</div>`;
 
   // Tabs
   html+=`<div class="tabs">
