@@ -793,6 +793,16 @@ function renderApp() {
   }
   html+=`</div>`;
 
+  // Sound test
+  html+=`<div class="settings-section">
+    <h3>🔔 试听提醒音</h3>
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="playChime()">📱 消遣提醒</button>
+      <button class="btn btn-secondary" onclick="playPlanChime()">⏰ 计划到期</button>
+    </div>
+    <div class="hint">浏览器会播放两种提醒音，手机端还会震动</div>
+  </div>`;
+
   // Data management
   html+=`<div class="settings-section">
     <h3>数据管理</h3>
