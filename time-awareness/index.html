@@ -429,9 +429,12 @@ body {
 
 .tl-gantt-wrap { display: flex; position: relative; }
 .tl-gantt-scroll {
-  max-height: 55vh; overflow-y: auto;
+  max-height: 420px; overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  border-radius: 0 0 8px 8px;
 }
+.tl-gantt-scroll::-webkit-scrollbar { width: 4px; }
+.tl-gantt-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
 .tl-gantt-col {
   flex: 1; position: relative; min-width: 0;
 }
@@ -451,21 +454,21 @@ body {
   gap: 5px; overflow: hidden; min-height: 36px;
 }
 .tl-gantt-block.plan-block {
-  border: 1.5px dashed #c4d4f0;
+  border: 1.5px dashed #c8d4ec;
 }
-.tl-gantt-block.plan-block.work     { background: #eef3ff; color: #6b85a8; border-color: #c0cfec; }
-.tl-gantt-block.plan-block.house    { background: #eef7ee; color: #6b8a6b; border-color: #c0dec0; }
-.tl-gantt-block.plan-block.exercise { background: #fff4ee; color: #b07848; border-color: #e8d0c0; }
-.tl-gantt-block.plan-block.charge   { background: #f4eeff; color: #8a6a9a; border-color: #d4c8e8; }
-.tl-gantt-block.plan-block.entertainment { background: #ffeeee; color: #b85858; border-color: #e8c8c8; }
-.tl-gantt-block.plan-block.uncategorized { background: #f7f7f7; color: #999; border-color: #ddd; }
-.tl-gantt-block.rec-block { color: #5a7a5a; }
-.tl-gantt-block.rec-block.work     { background: #e8f0ff; color: #4a6fa5; }
-.tl-gantt-block.rec-block.house    { background: #e8f8e8; color: #5a8a5a; }
-.tl-gantt-block.rec-block.exercise { background: #fff0e8; color: #c07840; }
-.tl-gantt-block.rec-block.charge   { background: #f0e8ff; color: #7a5a9a; }
-.tl-gantt-block.rec-block.entertainment { background: #ffe8e8; color: #c04848; }
-.tl-gantt-block.rec-block.uncategorized { background: #f5f5f5; color: #888; }
+.tl-gantt-block.plan-block.work     { background: #f5f8ff; color: #8a98b4; border-color: #c8d4ec; }
+.tl-gantt-block.plan-block.house    { background: #f8f4ff; color: #a090b8; border-color: #d4c8e8; }
+.tl-gantt-block.plan-block.exercise { background: #fff8f4; color: #c09878; border-color: #e8d0b8; }
+.tl-gantt-block.plan-block.charge   { background: #f5faf5; color: #8aaa8a; border-color: #bcd0bc; }
+.tl-gantt-block.plan-block.entertainment { background: #fff4f4; color: #c08888; border-color: #ecc8c8; }
+.tl-gantt-block.plan-block.uncategorized { background: #f7f7f7; color: #aaa; border-color: #ddd; }
+.tl-gantt-block.rec-block { color: #1a3a6a; }
+.tl-gantt-block.rec-block.work     { background: #d0e0ff; color: #1a3a6a; border-left: 3px solid #3366cc; }
+.tl-gantt-block.rec-block.house    { background: #e0d0f4; color: #4a2a6a; border-left: 3px solid #7733aa; }
+.tl-gantt-block.rec-block.exercise { background: #ffe0c8; color: #804020; border-left: 3px solid #cc6622; }
+.tl-gantt-block.rec-block.charge   { background: #c8e8c8; color: #1a4a1a; border-left: 3px solid #338833; }
+.tl-gantt-block.rec-block.entertainment { background: #ffd0d0; color: #701818; border-left: 3px solid #cc3333; }
+.tl-gantt-block.rec-block.uncategorized { background: #f0f0f0; color: #666; border-left: 3px solid #aaa; }
 .tl-gantt-block.ongoing {
   animation: ongoingPulse 2s ease-in-out infinite;
 }
@@ -490,6 +493,18 @@ body {
   position: absolute; left: 50%; transform: translateX(-50%);
   font-size: 10px; color: #ef4444; font-weight: 700; z-index: 11;
 }
+
+.tl-gantt-legend {
+  margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 10px;
+  font-size: 10px; color: #9ca3af; justify-content: center;
+}
+.tl-gantt-legend span { display: flex; align-items: center; gap: 4px; }
+.tl-legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.tl-legend-dot.w { background: #4a7abf; }
+.tl-legend-dot.h { background: #8a5ac0; }
+.tl-legend-dot.e { background: #e88840; }
+.tl-legend-dot.c { background: #4a9a4a; }
+.tl-legend-dot.n { background: #d04848; }
 
 /* Remove old timeline styles we no longer need */
 .timeline-dual, .tl-dual-left, .tl-dual-right, .tl-dual-label, .tl-dual-empty { display: none; }
@@ -1508,7 +1523,16 @@ function renderApp() {
 
     html+=`</div>`; // tl-gantt-wrap
     html+=`</div>`; // tl-gantt-scroll
-    html+=`</div>`; // tl-gantt-scroll
+
+    // Legend
+    html+=`<div class="tl-gantt-legend">
+      <span><span class="tl-legend-dot w"></span>工作/学习</span>
+      <span><span class="tl-legend-dot c"></span>充电</span>
+      <span><span class="tl-legend-dot h"></span>家务</span>
+      <span><span class="tl-legend-dot e"></span>锻炼</span>
+      <span><span class="tl-legend-dot n"></span>消遣</span>
+    </div>`;
+
     window._tlScrollTarget = scrollTop;
     window._tlScrollApplied = false;
   }
