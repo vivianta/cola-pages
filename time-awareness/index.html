@@ -451,8 +451,14 @@ body {
   gap: 5px; overflow: hidden; min-height: 36px;
 }
 .tl-gantt-block.plan-block {
-  background: #f0f4ff; border: 1.5px dashed #c4d4f0; color: #7b8ba8;
+  border: 1.5px dashed #c4d4f0;
 }
+.tl-gantt-block.plan-block.work     { background: #eef3ff; color: #6b85a8; border-color: #c0cfec; }
+.tl-gantt-block.plan-block.house    { background: #eef7ee; color: #6b8a6b; border-color: #c0dec0; }
+.tl-gantt-block.plan-block.exercise { background: #fff4ee; color: #b07848; border-color: #e8d0c0; }
+.tl-gantt-block.plan-block.charge   { background: #f4eeff; color: #8a6a9a; border-color: #d4c8e8; }
+.tl-gantt-block.plan-block.entertainment { background: #ffeeee; color: #b85858; border-color: #e8c8c8; }
+.tl-gantt-block.plan-block.uncategorized { background: #f7f7f7; color: #999; border-color: #ddd; }
 .tl-gantt-block.rec-block { color: #5a7a5a; }
 .tl-gantt-block.rec-block.work     { background: #e8f0ff; color: #4a6fa5; }
 .tl-gantt-block.rec-block.house    { background: #e8f8e8; color: #5a8a5a; }
@@ -1423,7 +1429,7 @@ function renderApp() {
       // Block
       const dur = Math.round((b.end - b.start) / 60000);
       const cat = PLAN_CATEGORIES[b.session.category];
-      html += `<div class="tl-gantt-block plan-block" style="top:${tlTimeToPx(b.start,baseMin).toFixed(1)}px;height:${tlMinToPx(eMin-sMin).toFixed(1)}px">
+      html += `<div class="tl-gantt-block plan-block ${b.session.category}" style="top:${tlTimeToPx(b.start,baseMin).toFixed(1)}px;height:${tlMinToPx(eMin-sMin).toFixed(1)}px">
         <span>${cat.icon} ${cat.name}</span>
         <span class="tl-gantt-time">${fmtTime(b.session.start)}–${fmtTime(b.end)}</span>
         <span class="tl-gantt-dur">${fmtDuration(dur)}</span>
