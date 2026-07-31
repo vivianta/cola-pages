@@ -419,6 +419,160 @@ body {
   .tl-v2-plan, .tl-v2-actual { font-size: 12px; padding: 8px 10px; }
   .tl-v2-dur { font-size: 11px; }
 }
+
+/* ===== Date Navigation ===== */
+.date-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 0 8px; gap: 8px;
+}
+.nav-arrow {
+  width: 36px; height: 36px; border: none; background: var(--surface);
+  border-radius: 50%; font-size: 18px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; box-shadow: var(--shadow);
+  color: var(--text-secondary); transition: all 0.15s; flex-shrink: 0;
+}
+.nav-arrow:active { transform: scale(0.93); background: var(--bg); }
+.date-center {
+  flex: 1; text-align: center; cursor: pointer; user-select: none;
+}
+.date-center .date-full { font-size: 17px; font-weight: 700; color: var(--text); }
+.date-center .date-weekday { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.today-btn {
+  padding: 6px 14px; font-size: 13px; font-weight: 600; border: 1.5px solid var(--border);
+  border-radius: 20px; background: var(--surface); color: var(--text-secondary);
+  cursor: pointer; font-family: var(--font); transition: all 0.15s; flex-shrink: 0;
+}
+.today-btn:active { background: var(--bg); }
+.today-btn.is-today { opacity: 0.4; pointer-events: none; }
+
+/* ===== 7-Day Strip ===== */
+.week-strip {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px 10px 10px; margin-bottom: 16px; box-shadow: var(--shadow);
+}
+.week-strip-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px; font-size: 12px;
+}
+.week-strip-header .label { color: var(--text-muted); font-weight: 500; }
+.week-strip-header .total { color: var(--text-secondary); font-weight: 600; }
+.week-strip-days { display: flex; gap: 6px; align-items: flex-end; }
+.week-day {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; cursor: pointer; padding: 4px 2px; border-radius: 8px;
+  transition: background 0.15s;
+}
+.week-day:hover { background: var(--bg); }
+.week-day.today { background: #F0F5FF; }
+.week-day.selected { background: #E8F0FE; }
+.tree-icon { width: 28px; height: 28px; flex-shrink: 0; }
+.bar-col {
+  width: 100%; max-width: 24px; min-height: 4px;
+  background: #d1d5db; border-radius: 3px; transition: height 0.3s ease;
+}
+.week-day.today .bar-col { background: var(--work); }
+.day-name { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+.week-day.today .day-name { color: var(--work); font-weight: 700; }
+.day-dur { font-size: 10px; color: var(--text-muted); }
+.week-day.today .day-dur { color: var(--work); font-weight: 600; }
+
+/* ===== Calendar Overlay ===== */
+.calendar-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 150; animation: fadeIn 0.15s;
+}
+.calendar-popup {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 20px; width: 320px; max-width: 90vw;
+  box-shadow: var(--shadow-md); animation: slideUp 0.2s;
+}
+.calendar-popup .cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.calendar-popup .cal-header .cal-month-label {
+  font-size: 15px; font-weight: 700;
+}
+.calendar-popup .cal-header button {
+  width: 30px; height: 30px; border: none; background: var(--bg);
+  border-radius: 50%; font-size: 16px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; color: var(--text-secondary);
+}
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-grid .cal-day-hdr {
+  font-size: 11px; color: var(--text-muted); text-align: center;
+  padding: 4px 0; font-weight: 600;
+}
+.cal-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; border-radius: 8px; cursor: pointer; color: var(--text);
+  font-weight: 500; transition: background 0.1s;
+}
+.cal-day:hover { background: var(--bg); }
+.cal-day.other-month { color: var(--text-muted); opacity: 0.4; }
+.cal-day.today { background: #E8F0FE; font-weight: 700; color: var(--work); }
+.cal-day.selected { background: var(--work); color: #fff; font-weight: 700; }
+
+/* ===== Granularity Tabs ===== */
+.granularity-tabs {
+  display: inline-flex; gap: 2px; background: var(--bg);
+  border-radius: var(--radius-sm); padding: 3px; margin-bottom: 14px;
+}
+.granularity-btn {
+  padding: 6px 16px; border: none; background: transparent;
+  border-radius: 8px; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: var(--font); color: var(--text-muted);
+  transition: all 0.15s;
+}
+.granularity-btn.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+
+/* ===== Week Chart ===== */
+.week-chart { margin-bottom: 20px; }
+.week-chart h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+.week-chart-bars { display: flex; gap: 8px; align-items: flex-end; height: 160px; padding-top: 4px; }
+.week-chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.week-chart-col .stack-wrap {
+  flex: 1; width: 100%; display: flex; flex-direction: column-reverse;
+  position: relative; max-width: 40px;
+}
+.week-chart-col .stack-seg { width: 100%; border-radius: 2px; transition: height 0.3s ease; }
+.week-chart-col .stack-label { font-size: 10px; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
+.week-chart-col .stack-dur { font-size: 9px; color: var(--text-muted); }
+.week-chart-legend { display: flex; gap: 12px; margin-top: 10px; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; }
+.week-chart-legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 3px; }
+
+/* ===== Data Cards ===== */
+.data-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+.data-card {
+  background: var(--surface); border-radius: var(--radius-sm);
+  padding: 14px; box-shadow: var(--shadow); text-align: center;
+}
+.data-card .card-label { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; }
+.data-card .card-val { font-size: 20px; font-weight: 700; }
+.data-card .card-delta { font-size: 11px; margin-top: 2px; font-weight: 600; }
+.data-card .card-delta.up { color: var(--chores); }
+.data-card .card-delta.down { color: var(--entertainment); }
+
+/* ===== Category Summary Table ===== */
+.cat-summary { margin-top: 16px; }
+.cat-summary h3 { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+.cat-summary-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.cat-summary-table th {
+  text-align: left; padding: 6px 8px; color: var(--text-muted);
+  font-weight: 500; border-bottom: 1px solid var(--border); font-size: 11px;
+}
+.cat-summary-table td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
+.cat-summary-table .cat-icon-cell { width: 32px; text-align: center; }
+.cat-summary-table .cat-name-cell { font-weight: 600; }
+.cat-summary-table .cat-dur-cell { text-align: right; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 400px) {
+  .date-center .date-full { font-size: 15px; }
+  .week-chart-bars { height: 130px; }
+  .data-card { padding: 10px; }
+  .data-card .card-val { font-size: 17px; }
+}
 </style>
 </head>
 <body>
@@ -462,6 +616,180 @@ function todayStr() {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function debounce(fn, ms) { let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),ms); }; }
+
+// ========== DATE UTILITIES ==========
+function fmtDateShort(iso) {
+  const d = new Date(iso);
+  return `${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtDateFull(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtDateDisplay(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+}
+function getWeekday(dateStr) {
+  const weekdays = ['日','一','二','三','四','五','六'];
+  const d = new Date(dateStr + 'T00:00:00');
+  return weekdays[d.getDay()];
+}
+function isSameDate(dateStr1, dateStr2) {
+  return dateStr1 === dateStr2;
+}
+function getSessionsForDate(dateStr) {
+  return data.sessions.filter(s => {
+    const sd = new Date(s.start);
+    return `${sd.getFullYear()}-${String(sd.getMonth()+1).padStart(2,'0')}-${String(sd.getDate()).padStart(2,'0')}` === dateStr;
+  }).sort((a,b) => new Date(a.start) - new Date(b.start));
+}
+function getWeekRange(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + diff);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const fmt = dt => `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+  const startDate = new Date(dateStr + 'T00:00:00');
+  const weekNum = getISOWeekNumber(startDate);
+  return { start: fmt(monday), end: fmt(sunday), weekNum };
+}
+function getMonthRange(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const first = new Date(d.getFullYear(), d.getMonth(), 1);
+  const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+  const fmt = dt => `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+  return { start: fmt(first), end: fmt(last) };
+}
+function getPrevWeek(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() - 7);
+  return getWeekRange(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+}
+function getPrevMonth(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setMonth(d.getMonth() - 1);
+  return getMonthRange(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(Math.min(d.getDate(), 28)).padStart(2,'0')}`);
+}
+function getNextWeek(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + 7);
+  return getWeekRange(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+}
+function getNextMonth(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setMonth(d.getMonth() + 1);
+  return getMonthRange(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(Math.min(d.getDate(), 28)).padStart(2,'0')}`);
+}
+function getISOWeekNumber(d) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+}
+function computeDayTotal(dateStr) {
+  const sessions = getSessionsForDate(dateStr);
+  let total = 0;
+  for (const s of sessions) {
+    if (s.type !== 'record') continue;
+    const dur = s.end ? sessionDuration(s) : 0;
+    total += dur;
+  }
+  return total;
+}
+function computeEntertainmentPct(dateStr) {
+  const sessions = getSessionsForDate(dateStr);
+  let total = 0, ent = 0;
+  for (const s of sessions) {
+    if (s.type !== 'record') continue;
+    const dur = s.end ? sessionDuration(s) : 0;
+    total += dur;
+    if (s.category === 'entertainment') ent += dur;
+  }
+  if (total === 0) return 0;
+  return Math.round(ent / total * 100);
+}
+function getTreeIcon(dateStr) {
+  const total = computeDayTotal(dateStr);
+  if (total === 0) return 'tree-stump.svg';
+  const entPct = computeEntertainmentPct(dateStr);
+  if (entPct > 40) return 'tree-wilting.svg';
+  if (entPct >= 20) return 'tree-yellowing.svg';
+  return 'tree-blooming.svg';
+}
+function shiftDate(dateStr, days) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function goPrevPeriod() {
+  if (currentTab === 'stats' && statsGranularity === 'week') {
+    const prev = getPrevWeek(selectedDate);
+    selectedDate = prev.start;
+  } else if (currentTab === 'stats' && statsGranularity === 'month') {
+    const d = new Date(selectedDate + 'T00:00:00');
+    d.setMonth(d.getMonth() - 1);
+    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    const day = Math.min(parseInt(selectedDate.split('-')[2]), lastDay);
+    selectedDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  } else {
+    selectedDate = shiftDate(selectedDate, -1);
+  }
+  renderAll();
+}
+function goNextPeriod() {
+  if (currentTab === 'stats' && statsGranularity === 'week') {
+    const next = getNextWeek(selectedDate);
+    selectedDate = next.start;
+  } else if (currentTab === 'stats' && statsGranularity === 'month') {
+    const d = new Date(selectedDate + 'T00:00:00');
+    d.setMonth(d.getMonth() + 1);
+    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    const day = Math.min(parseInt(selectedDate.split('-')[2]), lastDay);
+    selectedDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  } else {
+    selectedDate = shiftDate(selectedDate, 1);
+  }
+  renderAll();
+}
+function renderCalendar() {
+  const y = calMonth.getFullYear();
+  const m = calMonth.getMonth();
+  const firstDay = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const daysInPrevMonth = new Date(y, m, 0).getDate();
+  let h = `<div class="calendar-overlay" onclick="if(event.target===this){showCalendar=false;renderAll()}">
+    <div class="calendar-popup" onclick="event.stopPropagation()">
+      <div class="cal-header">
+        <button onclick="calMonth=new Date(${y},${m-1},1);renderAll()">←</button>
+        <span class="cal-month-label">${y}年${m+1}月</span>
+        <button onclick="calMonth=new Date(${y},${m+1},1);renderAll()">→</button>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-day-hdr">日</div><div class="cal-day-hdr">一</div><div class="cal-day-hdr">二</div><div class="cal-day-hdr">三</div><div class="cal-day-hdr">四</div><div class="cal-day-hdr">五</div><div class="cal-day-hdr">六</div>`;
+  for (let i = firstDay - 1; i >= 0; i--) {
+    const d = daysInPrevMonth - i;
+    h += `<div class="cal-day other-month">${d}</div>`;
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = isSameDate(dateStr, todayStr());
+    const isSelected = isSameDate(dateStr, selectedDate);
+    const cls = ['cal-day', isToday ? 'today' : '', isSelected ? 'selected' : ''].filter(Boolean).join(' ');
+    h += `<div class="${cls}" onclick="selectedDate='${dateStr}';showCalendar=false;renderAll()">${d}</div>`;
+  }
+  const remaining = 7 - ((firstDay + daysInMonth) % 7);
+  if (remaining < 7) {
+    for (let d = 1; d <= remaining; d++) {
+      h += `<div class="cal-day other-month">${d}</div>`;
+    }
+  }
+  h += `</div></div></div>`;
+  return h;
+}
 
 // ========== LOCAL STORAGE ==========
 function loadLocal() {
@@ -538,6 +866,10 @@ let editingSession = null;
 let showEditModal = false;
 let syncStatus = 'offline';
 let initialSyncDone = false;
+let selectedDate = todayStr();
+let statsGranularity = 'day';
+let showCalendar = false;
+let calMonth = new Date();
 
 function saveDataAndSync() {
   saveLocal(data);
@@ -710,15 +1042,17 @@ function deleteSession(id) {
 }
 
 // ========== QUERIES ==========
-function getTodaySessions() {
-  return data.sessions.filter(s=>isToday(s.start)).sort((a,b)=>new Date(a.start)-new Date(b.start));
+function getTodaySessions(dateStr) {
+  const target = dateStr || todayStr();
+  return getSessionsForDate(target);
 }
-function getTodayStats() {
-  const sessions=getTodaySessions();
+function getTodayStats(dateStr) {
+  const sessions=getTodaySessions(dateStr);
   const planStats={}, recordStats={};
   for(const k of Object.keys(PLAN_CATEGORIES)){planStats[k]=0;}
   for(const k of Object.keys(RECORD_CATEGORIES)){recordStats[k]=0;}
   let planTotal=0, recordTotal=0;
+  const target = dateStr || todayStr();
   for(const s of sessions){
     const dur=s.end?sessionDuration(s):(activeRecord&&s.id===activeRecord.id?Math.floor((Date.now()-new Date(s.start).getTime())/60000):0);
     if(s.type==='plan'){planStats[s.category]+=dur;planTotal+=dur;}
@@ -733,7 +1067,7 @@ function getActivePlanRemaining() {
 
 // ========== TIMELINE V2 BLOCK CONSTRUCTION ==========
 function buildTimelineBlocks() {
-  const sessions = getTodaySessions();
+  const sessions = getTodaySessions(selectedDate);
   const plans = sessions.filter(s => s.type === 'plan');
   const records = sessions.filter(s => s.type === 'record');
   const pairedRecordIds = new Set();
@@ -905,8 +1239,6 @@ function renderAll() {
 
 function renderApp() {
   const app=document.getElementById('app');
-  const now=new Date();
-  const weekdays=['日','一','二','三','四','五','六'];
   const {planStats,recordStats,planTotal,recordTotal}=getTodayStats();
 
   let catDurations={};
@@ -916,16 +1248,64 @@ function renderApp() {
     catDurations[activeRecord.category]=(catDurations[activeRecord.category]||0)+elapsed;
   }
 
+  const isTodayView = isSameDate(selectedDate, todayStr());
   let html='';
 
-  // Header + sync indicator
-  html+=`<div class="header">
-    <div class="date">${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日</div>
-    <div class="weekday">星期${weekdays[now.getDay()]}</div>
+  // Date navigation
+  html+=`<div class="date-nav">
+    <button class="nav-arrow" onclick="goPrevPeriod()">←</button>
+    <div class="date-center" onclick="showCalendar=true;calMonth=new Date(selectedDate+'T00:00:00');renderAll()">
+      <div class="date-full">${fmtDateFull(selectedDate)}</div>
+      <div class="date-weekday">周${getWeekday(selectedDate)}</div>
+    </div>
+    <button class="nav-arrow" onclick="goNextPeriod()">→</button>
+    <button class="today-btn ${isTodayView?'is-today':''}" onclick="selectedDate=todayStr();renderAll()">今天</button>
+  </div>`;
+
+  // Sync indicator
+  html+=`<div style="text-align:center;margin-bottom:10px">
     <div class="sync-indicator ${getSyncUrl()?'synced':'offline'}" id="sync-dot" onclick="currentTab='settings';switchTab('settings');renderAll()">
       <span class="dot"></span> <span>${getSyncUrl()?'已同步':'未设置同步'}</span>
     </div>
   </div>`;
+
+  // 7-day strip
+  (()=>{
+    const dayCols=[];
+    let weekTotal=0, maxDayDur=0;
+    for(let i=6;i>=0;i--){
+      const d=shiftDate(todayStr(),-i);
+      const dur=computeDayTotal(d);
+      dayCols.push({date:d,dur,weekday:getWeekday(d),tree:getTreeIcon(d)});
+      weekTotal+=dur;
+      if(dur>maxDayDur) maxDayDur=dur;
+    }
+    html+=`<div class="week-strip">
+      <div class="week-strip-header">
+        <span class="label">过去 7 天</span>
+        <span class="total">本周 ${fmtDuration(weekTotal)}</span>
+      </div>
+      <div class="week-strip-days">`;
+    for(const col of dayCols){
+      const isToday=isSameDate(col.date,todayStr());
+      const isSelected=isSameDate(col.date,selectedDate);
+      const heightPct=maxDayDur>0?Math.max(4,Math.round(col.dur/maxDayDur*60)):4;
+      const cls=['week-day',isToday?'today':'',isSelected?'selected':''].filter(Boolean).join(' ');
+      const iconBase='https://vivianta.github.io/cola-pages/time-awareness/';
+      html+=`<div class="${cls}" onclick="selectedDate='${col.date}';renderAll()">
+        <img class="tree-icon" src="${iconBase}${col.tree}" alt="" onerror="this.style.display='none'">
+        <div class="bar-col" style="height:${heightPct}px"></div>
+        <div class="day-name">${col.weekday}</div>
+        <div class="day-dur">${col.dur>0?fmtDuration(col.dur):''}</div>
+      </div>`;
+    }
+    html+=`</div></div>`;
+  })();
+
+  // Calendar overlay
+  if(showCalendar){
+    html+=renderCalendar();
+  }
 
   // Mode toggle
   html+=`<div class="mode-toggle">
@@ -1012,7 +1392,8 @@ function renderApp() {
   html+=`<div class="tab-panel ${currentTab==='timeline'?'active':''}" id="panel-timeline">`;
   const blocks = buildTimelineBlocks();
   if (blocks.length === 0) {
-    html+=`<div class="empty-state"><div class="empty-icon">📋</div><div>今天还没有记录</div><div class="empty-sub">计划或记录一条来开始</div></div>`;
+    const emptyMsg = isTodayView ? '今天还没有记录' : `${fmtDateFull(selectedDate)} 没有记录`;
+    html+=`<div class="empty-state"><div class="empty-icon">📋</div><div>${emptyMsg}</div><div class="empty-sub">计划或记录一条来开始</div></div>`;
   } else {
     html+=`<div class="timeline-v2">`;
     const nowTime = new Date();
@@ -1029,7 +1410,7 @@ function renderApp() {
       if (prevEnd && blockStart > prevEnd) {
         const gapMin = Math.round((blockStart - prevEnd) / 60000);
         if (gapMin >= 3) {
-          if (!nowInserted && nowTime > prevEnd && nowTime <= blockStart) {
+          if (isTodayView && !nowInserted && nowTime > prevEnd && nowTime <= blockStart) {
             html += renderNowLine();
             nowInserted = true;
           }
@@ -1037,8 +1418,8 @@ function renderApp() {
         }
       }
 
-      // NOW line before this block (if it starts after now)
-      if (!nowInserted && prevEnd && nowTime <= blockStart && nowTime > prevEnd) {
+      // NOW line before this block (if it starts after now) — only for today
+      if (isTodayView && !nowInserted && prevEnd && nowTime <= blockStart && nowTime > prevEnd) {
         html += renderNowLine();
         nowInserted = true;
       }
@@ -1054,8 +1435,8 @@ function renderApp() {
       prevEnd = blockEnd;
     }
 
-    // NOW after all blocks
-    if (!nowInserted) {
+    // NOW after all blocks — only for today
+    if (isTodayView && !nowInserted) {
       html += renderNowLine();
     }
 
@@ -1063,117 +1444,22 @@ function renderApp() {
   }
   html+=`</div>`;
 
-  // === STATS V2 ===
+  // === STATS V3 ===
   html+=`<div class="tab-panel ${currentTab==='stats'?'active':''}" id="panel-stats">`;
-  const displayRecordStats={...recordStats};
-  if(activeRecord){
-    const elapsed=Math.floor((Date.now()-new Date(activeRecord.start).getTime())/60000);
-    displayRecordStats[activeRecord.category]=(displayRecordStats[activeRecord.category]||0)+elapsed;
-  }
-  const totalActual=Object.values(displayRecordStats).reduce((a,b)=>a+b,0);
-  const hasAnyData=totalActual>0||planTotal>0;
-  if(!hasAnyData){
-    html+=`<div class="stats-v2-empty"><div class="icon">📊</div><div>今天还没有数据</div><div class="sub">计划或记录一条来开始</div></div>`;
-  }else{
-    const weekdaysV2=['日','一','二','三','四','五','六'];
-    const dateStr=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
-    const timeStr=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-    html+=`<h2 style="font-size:18px;margin-bottom:4px">📊 今日统计</h2>`;
-    html+=`<div class="stats-v2-subtitle">${dateStr} 周${weekdaysV2[now.getDay()]} · 截止 ${timeStr}</div>`;
 
-    const totalPlan=planTotal;
-    const totalActualH=totalActual>0?(totalActual/60).toFixed(1):'0';
-    const planHDisplay=totalPlan>0?(totalPlan/60).toFixed(1)+'h':'—';
-    const actualHDisplay=totalActual>0?(totalActual/60).toFixed(1)+'h':'—';
-    const coverage=totalPlan>0&&totalActual>0?Math.min(100,Math.round(totalPlan/totalActual*100)):0;
-    const entPlan=planStats['entertainment']||0;
-    const entActual=displayRecordStats['entertainment']||0;
-    const unplannedEnt=Math.max(0,entActual-entPlan);
-    const unplannedH=unplannedEnt>0?(unplannedEnt/60).toFixed(1)+'h':'—';
+  // Granularity tabs
+  html+=`<div class="granularity-tabs">
+    <button class="granularity-btn ${statsGranularity==='day'?'active':''}" onclick="statsGranularity='day';renderAll()">日</button>
+    <button class="granularity-btn ${statsGranularity==='week'?'active':''}" onclick="statsGranularity='week';renderAll()">周</button>
+    <button class="granularity-btn ${statsGranularity==='month'?'active':''}" onclick="statsGranularity='month';renderAll()">月</button>
+  </div>`;
 
-    html+=`<div class="stats-v2-summary">`;
-    if(totalActual>0){
-      const CIRCUMFERENCE=2*Math.PI*50;
-      let donutSegments='',cumulative=0;
-      for(const[key,cat]of Object.entries(RECORD_CATEGORIES)){
-        const dur=displayRecordStats[key]||0;
-        if(dur<=0) continue;
-        const pct=dur/totalActual;
-        const dashLen=pct*CIRCUMFERENCE;
-        donutSegments+=`<circle cx="60" cy="60" r="50" fill="none" stroke="${cat.color}" stroke-width="16" stroke-dasharray="${dashLen.toFixed(2)} ${CIRCUMFERENCE.toFixed(2)}" stroke-dashoffset="${cumulative.toFixed(2)}"/>`;
-        cumulative+=dashLen;
-      }
-      html+=`<div class="stats-v2-donut">
-        <svg viewBox="0 0 120 120">
-          <circle cx="60" cy="60" r="50" fill="none" stroke="#f3f4f6" stroke-width="16"/>
-          ${donutSegments}
-        </svg>
-        <div class="stats-v2-donut-center">
-          <div class="big">${totalActualH}h</div>
-          <div class="label">总记录</div>
-        </div>
-      </div>`;
-    }else{
-      html+=`<div class="stats-v2-donut">
-        <svg viewBox="0 0 120 120">
-          <circle cx="60" cy="60" r="50" fill="none" stroke="#f3f4f6" stroke-width="16"/>
-        </svg>
-        <div class="stats-v2-donut-center">
-          <div class="big">${totalActualH}h</div>
-          <div class="label">总记录</div>
-        </div>
-      </div>`;
-    }
-    html+=`<div class="stats-v2-summary-side">
-      <div class="stats-v2-summary-row"><span>📋 计划时长</span><span class="val">${planHDisplay}</span></div>
-      <div class="stats-v2-summary-row"><span>⏱ 实际记录</span><span class="val">${actualHDisplay}</span></div>
-      <div class="stats-v2-summary-row"><span>📱 计划外消遣</span><span class="val" style="color:var(--entertainment)">${unplannedH}</span></div>
-      <div class="stats-v2-divider"></div>
-      <div class="stats-v2-completion ${coverage>=80?'good':'warn'}"><span class="arrow">→</span> 计划覆盖率 ${coverage}%</div>
-    </div>`;
-    html+=`</div>`;
-
-    html+=`<div class="stats-v2-section-title">分类明细 · 计划 vs 实际</div>`;
-    for(const[key,cat]of Object.entries(PLAN_CATEGORIES)){
-      const planDur=planStats[key]||0, actualDur=displayRecordStats[key]||0;
-      const planH=planDur>0?(planDur/60).toFixed(1)+'h':'0h';
-      const actH=actualDur>0?(actualDur/60).toFixed(1)+'h':'0h';
-      const rowPct=planDur>0?Math.round(actualDur/planDur*100):0;
-      let pctDisplay,pctColor,barW;
-      if(planDur>0){
-        pctDisplay=`${rowPct}%`;
-        barW=Math.min(100,rowPct);
-        pctColor=rowPct>=90?'var(--chores)':rowPct>=50?'var(--exercise)':'var(--entertainment)';
-      }else{
-        pctDisplay='—';
-        barW=actualDur>0?100:0;
-        pctColor='var(--text-muted)';
-      }
-      html+=`<div class="stats-v2-cat-row">
-        <div class="icon">${cat.icon}</div>
-        <div class="info">
-          <div class="name">${cat.name}</div>
-          <div class="time-row"><span>计划 ${planH}</span><span>实际 ${actH}</span></div>
-        </div>
-        <div class="bar-wrap">
-          <div class="bar-track"><div class="bar-fill" style="width:${barW}%;background:${cat.color}"></div></div>
-          <div class="bar-pct" style="color:${pctColor}">${pctDisplay}</div>
-        </div>
-      </div>`;
-    }
-
-    if(unplannedEnt>0){
-      html+=`<div class="stats-v2-unplanned">
-        <span class="icon">⚠️</span>
-        <span>${(unplannedEnt/60).toFixed(1)} 小时消遣没有对应计划 — 属于计划外时间</span>
-      </div>`;
-    }
-
-    html+=`<div class="stats-v2-legend">`;
-    for(const[key,cat]of Object.entries(PLAN_CATEGORIES)){
-      html+=`<span><span class="dot" style="background:${cat.color}"></span>${cat.name}</span>`;
-    }
-    html+=`</div>`;
+  if (statsGranularity === 'day') {
+    html += renderDayStats();
+  } else if (statsGranularity === 'week') {
+    html += renderWeekStats();
+  } else if (statsGranularity === 'month') {
+    html += renderMonthStats();
   }
   html+=`</div>`;
 
@@ -1238,6 +1524,308 @@ function renderApp() {
   html+=`</div>`;
 
   app.innerHTML=html;
+}
+
+// ========== STATS RENDER HELPERS ==========
+function computeStatsForDate(dateStr) {
+  const sessions = getSessionsForDate(dateStr);
+  const planStats = {}, recordStats = {};
+  for (const k of Object.keys(PLAN_CATEGORIES)) { planStats[k] = 0; }
+  for (const k of Object.keys(RECORD_CATEGORIES)) { recordStats[k] = 0; }
+  let planTotal = 0, recordTotal = 0;
+  for (const s of sessions) {
+    const dur = s.end ? sessionDuration(s) : 0;
+    if (s.type === 'plan') { planStats[s.category] += dur; planTotal += dur; }
+    else { recordStats[s.category] += dur; recordTotal += dur; }
+  }
+  return { planStats, recordStats, planTotal, recordTotal };
+}
+
+function renderDayStats() {
+  const { planStats, recordStats, planTotal, recordTotal } = computeStatsForDate(selectedDate);
+  const displayRecordStats = { ...recordStats };
+  if (isSameDate(selectedDate, todayStr()) && activeRecord) {
+    const elapsed = Math.floor((Date.now() - new Date(activeRecord.start).getTime()) / 60000);
+    displayRecordStats[activeRecord.category] = (displayRecordStats[activeRecord.category] || 0) + elapsed;
+  }
+  const totalActual = Object.values(displayRecordStats).reduce((a, b) => a + b, 0);
+  const hasAnyData = totalActual > 0 || planTotal > 0;
+  if (!hasAnyData) {
+    return `<div class="stats-v2-empty"><div class="icon">📊</div><div>${isSameDate(selectedDate, todayStr()) ? '今天' : fmtDateFull(selectedDate)}还没有数据</div><div class="sub">计划或记录一条来开始</div></div>`;
+  }
+  let h = '';
+  const now = new Date();
+  const dateStr = fmtDateFull(selectedDate);
+  const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  h += `<h2 style="font-size:18px;margin-bottom:4px">📊 日统计</h2>`;
+  h += `<div class="stats-v2-subtitle">${dateStr} 周${getWeekday(selectedDate)} · 截止 ${timeStr}</div>`;
+
+  const totalActualH = totalActual > 0 ? (totalActual / 60).toFixed(1) : '0';
+  const planHDisplay = planTotal > 0 ? (planTotal / 60).toFixed(1) + 'h' : '—';
+  const actualHDisplay = totalActual > 0 ? (totalActual / 60).toFixed(1) + 'h' : '—';
+  const coverage = planTotal > 0 && totalActual > 0 ? Math.min(100, Math.round(planTotal / totalActual * 100)) : 0;
+  const entPlan = planStats['entertainment'] || 0;
+  const entActual = displayRecordStats['entertainment'] || 0;
+  const unplannedEnt = Math.max(0, entActual - entPlan);
+  const unplannedH = unplannedEnt > 0 ? (unplannedEnt / 60).toFixed(1) + 'h' : '—';
+
+  h += `<div class="stats-v2-summary">`;
+  if (totalActual > 0) {
+    const CIRCUMFERENCE = 2 * Math.PI * 50;
+    let donutSegments = '', cumulative = 0;
+    for (const [key, cat] of Object.entries(RECORD_CATEGORIES)) {
+      const dur = displayRecordStats[key] || 0;
+      if (dur <= 0) continue;
+      const pct = dur / totalActual;
+      const dashLen = pct * CIRCUMFERENCE;
+      donutSegments += `<circle cx="60" cy="60" r="50" fill="none" stroke="${cat.color}" stroke-width="16" stroke-dasharray="${dashLen.toFixed(2)} ${CIRCUMFERENCE.toFixed(2)}" stroke-dashoffset="${cumulative.toFixed(2)}"/>`;
+      cumulative += dashLen;
+    }
+    h += `<div class="stats-v2-donut"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="#f3f4f6" stroke-width="16"/>${donutSegments}</svg><div class="stats-v2-donut-center"><div class="big">${totalActualH}h</div><div class="label">总记录</div></div></div>`;
+  } else {
+    h += `<div class="stats-v2-donut"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="#f3f4f6" stroke-width="16"/></svg><div class="stats-v2-donut-center"><div class="big">${totalActualH}h</div><div class="label">总记录</div></div></div>`;
+  }
+  h += `<div class="stats-v2-summary-side">
+    <div class="stats-v2-summary-row"><span>📋 计划时长</span><span class="val">${planHDisplay}</span></div>
+    <div class="stats-v2-summary-row"><span>⏱ 实际记录</span><span class="val">${actualHDisplay}</span></div>
+    <div class="stats-v2-summary-row"><span>📱 计划外消遣</span><span class="val" style="color:var(--entertainment)">${unplannedH}</span></div>
+    <div class="stats-v2-divider"></div>
+    <div class="stats-v2-completion ${coverage >= 80 ? 'good' : 'warn'}"><span class="arrow">→</span> 计划覆盖率 ${coverage}%</div>
+  </div></div>`;
+
+  h += `<div class="stats-v2-section-title">分类明细 · 计划 vs 实际</div>`;
+  for (const [key, cat] of Object.entries(PLAN_CATEGORIES)) {
+    const planDur = planStats[key] || 0, actualDur = displayRecordStats[key] || 0;
+    const planH = planDur > 0 ? (planDur / 60).toFixed(1) + 'h' : '0h';
+    const actH = actualDur > 0 ? (actualDur / 60).toFixed(1) + 'h' : '0h';
+    const rowPct = planDur > 0 ? Math.round(actualDur / planDur * 100) : 0;
+    let pctDisplay, pctColor, barW;
+    if (planDur > 0) {
+      pctDisplay = `${rowPct}%`;
+      barW = Math.min(100, rowPct);
+      pctColor = rowPct >= 90 ? 'var(--chores)' : rowPct >= 50 ? 'var(--exercise)' : 'var(--entertainment)';
+    } else {
+      pctDisplay = '—';
+      barW = actualDur > 0 ? 100 : 0;
+      pctColor = 'var(--text-muted)';
+    }
+    h += `<div class="stats-v2-cat-row"><div class="icon">${cat.icon}</div><div class="info"><div class="name">${cat.name}</div><div class="time-row"><span>计划 ${planH}</span><span>实际 ${actH}</span></div></div><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:${barW}%;background:${cat.color}"></div></div><div class="bar-pct" style="color:${pctColor}">${pctDisplay}</div></div></div>`;
+  }
+  if (unplannedEnt > 0) {
+    h += `<div class="stats-v2-unplanned"><span class="icon">⚠️</span><span>${(unplannedEnt / 60).toFixed(1)} 小时消遣没有对应计划 — 属于计划外时间</span></div>`;
+  }
+  h += `<div class="stats-v2-legend">`;
+  for (const [key, cat] of Object.entries(PLAN_CATEGORIES)) {
+    h += `<span><span class="dot" style="background:${cat.color}"></span>${cat.name}</span>`;
+  }
+  h += `</div>`;
+  return h;
+}
+
+function renderWeekStats() {
+  const week = getWeekRange(selectedDate);
+  const prevWeek = getPrevWeek(selectedDate);
+  const days = [];
+  let weekTotal = 0, weekPlanTotal = 0, maxDayDur = 0;
+  const catTotals = {};
+  const catColors = { work: '#4A90D9', chores: '#4CAF84', exercise: '#F09B4A', recharge: '#8B7EC8', entertainment: '#E0687A' };
+  for (const k of Object.keys(PLAN_CATEGORIES)) catTotals[k] = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = shiftDate(week.start, i);
+    const stats = computeStatsForDate(d);
+    const dur = stats.recordTotal;
+    days.push({ date: d, ...stats, recordTotal: dur });
+    weekTotal += dur;
+    weekPlanTotal += stats.planTotal;
+    if (dur > maxDayDur) maxDayDur = dur;
+    for (const k of Object.keys(PLAN_CATEGORIES)) {
+      catTotals[k] += (stats.recordStats[k] || 0);
+    }
+  }
+
+  // Prev week for deltas
+  let prevWeekTotal = 0, prevEntTotal = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = shiftDate(prevWeek.start, i);
+    const stats = computeStatsForDate(d);
+    prevWeekTotal += stats.recordTotal;
+    prevEntTotal += (stats.recordStats['entertainment'] || 0);
+  }
+  const curEntTotal = catTotals['entertainment'] || 0;
+
+  let h = '';
+  const d0 = new Date(selectedDate + 'T00:00:00');
+  const weekNum = getISOWeekNumber(d0);
+  h += `<h2 style="font-size:18px;margin-bottom:4px">📊 周统计</h2>`;
+  h += `<div class="stats-v2-subtitle">W${weekNum} · ${fmtDateShort(week.start)} – ${fmtDateShort(week.end)}</div>`;
+
+  // Stacked bar chart
+  h += `<div class="week-chart"><h3>每日分类分布</h3><div class="week-chart-bars">`;
+  const catOrder = ['work', 'chores', 'exercise', 'recharge', 'entertainment'];
+  const MAX_BAR_H = 140;
+  for (const day of days) {
+    const scale = maxDayDur > 0 ? MAX_BAR_H / maxDayDur : 0;
+    h += `<div class="week-chart-col"><div class="stack-wrap">`;
+    for (const catKey of catOrder) {
+      const dur = day.recordStats[catKey] || 0;
+      if (dur <= 0) continue;
+      const segH = Math.max(2, Math.round(dur * scale));
+      h += `<div class="stack-seg" style="height:${segH}px;background:${catColors[catKey]}"></div>`;
+    }
+    h += `</div><div class="stack-label">${getWeekday(day.date)}</div><div class="stack-dur">${day.recordTotal > 0 ? fmtDuration(day.recordTotal) : ''}</div></div>`;
+  }
+  h += `</div><div class="week-chart-legend">`;
+  for (const catKey of catOrder) {
+    const cat = PLAN_CATEGORIES[catKey];
+    h += `<span><span class="dot" style="background:${catColors[catKey]}"></span>${cat.name}</span>`;
+  }
+  h += `</div></div>`;
+
+  // Data cards
+  const avgPerDay = weekTotal > 0 ? Math.round(weekTotal / 7) : 0;
+  const coverage = weekPlanTotal > 0 && weekTotal > 0 ? Math.min(100, Math.round(weekPlanTotal / weekTotal * 100)) : 0;
+  const entPct = weekTotal > 0 ? Math.round(curEntTotal / weekTotal * 100) : 0;
+  const deltaTotal = prevWeekTotal > 0 ? Math.round((weekTotal - prevWeekTotal) / prevWeekTotal * 100) : 0;
+  const deltaEnt = prevEntTotal > 0 ? Math.round((curEntTotal - prevEntTotal) / prevEntTotal * 100) : 0;
+  h += `<div class="data-cards">
+    <div class="data-card"><div class="card-label">周总记录</div><div class="card-val">${fmtDuration(weekTotal)}</div>${deltaTotal !== 0 ? `<div class="card-delta ${deltaTotal >= 0 ? 'up' : 'down'}">${deltaTotal >= 0 ? '↑' : '↓'}${Math.abs(deltaTotal)}%</div>` : ''}</div>
+    <div class="data-card"><div class="card-label">日均</div><div class="card-val">${fmtDuration(avgPerDay)}</div></div>
+    <div class="data-card"><div class="card-label">计划覆盖率</div><div class="card-val">${coverage}%</div></div>
+    <div class="data-card"><div class="card-label">消遣占比</div><div class="card-val">${entPct}%</div>${deltaEnt !== 0 ? `<div class="card-delta ${deltaEnt <= 0 ? 'up' : 'down'}">${deltaEnt <= 0 ? '↓' : '↑'}${Math.abs(deltaEnt)}%</div>` : ''}</div>
+  </div>`;
+
+  // Category summary table
+  h += `<div class="cat-summary"><h3>分类汇总</h3><table class="cat-summary-table"><thead><tr><th></th><th>分类</th><th>周总时长</th><th>日均</th><th>备注</th></tr></thead><tbody>`;
+  for (const catKey of catOrder) {
+    const cat = PLAN_CATEGORIES[catKey];
+    const totalMin = catTotals[catKey] || 0;
+    const dailyAvg = Math.round(totalMin / 7);
+    let note = '';
+    if (catKey === 'entertainment' && entPct > 40) note = '⚠️ 偏高';
+    if (catKey === 'exercise' && dailyAvg < 15) note = '建议多动';
+    if (catKey === 'recharge' && dailyAvg < 10) note = '注意休息';
+    h += `<tr><td class="cat-icon-cell">${cat.icon}</td><td class="cat-name-cell">${cat.name}</td><td class="cat-dur-cell">${fmtDuration(totalMin)}</td><td class="cat-dur-cell">${fmtDuration(dailyAvg)}</td><td style="font-size:11px;color:var(--text-muted)">${note}</td></tr>`;
+  }
+  h += `</tbody></table></div>`;
+  return h;
+}
+
+function renderMonthStats() {
+  const month = getMonthRange(selectedDate);
+  const prevMonth = getPrevMonth(selectedDate);
+  const d = new Date(selectedDate + 'T00:00:00');
+  const monthLabel = `${d.getFullYear()}年${d.getMonth() + 1}月`;
+
+  // Split into weeks
+  const weeks = [];
+  const monStart = new Date(month.start + 'T00:00:00');
+  let curWeekStart = new Date(monStart);
+  const diff = curWeekStart.getDay() === 0 ? -6 : 1 - curWeekStart.getDay();
+  curWeekStart.setDate(curWeekStart.getDate() + diff);
+  const monEnd = new Date(month.end + 'T00:00:00');
+
+  while (curWeekStart <= monEnd) {
+    const wkStart = new Date(curWeekStart);
+    const wkEnd = new Date(curWeekStart);
+    wkEnd.setDate(wkEnd.getDate() + 6);
+    const ws = `${wkStart.getFullYear()}-${String(wkStart.getMonth() + 1).padStart(2, '0')}-${String(wkStart.getDate()).padStart(2, '0')}`;
+    const we = `${wkEnd.getFullYear()}-${String(wkEnd.getMonth() + 1).padStart(2, '0')}-${String(wkEnd.getDate()).padStart(2, '0')}`;
+    let wkTotal = 0, wkPlanTotal = 0;
+    const wkCatTotals = {};
+    for (const k of Object.keys(PLAN_CATEGORIES)) wkCatTotals[k] = 0;
+    for (let i = 0; i < 7; i++) {
+      const day = shiftDate(ws, i);
+      const stats = computeStatsForDate(day);
+      wkTotal += stats.recordTotal;
+      wkPlanTotal += stats.planTotal;
+      for (const k of Object.keys(PLAN_CATEGORIES)) {
+        wkCatTotals[k] += (stats.recordStats[k] || 0);
+      }
+    }
+    const weekNum = getISOWeekNumber(wkStart);
+    weeks.push({ label: `W${weekNum}`, total: wkTotal, planTotal: wkPlanTotal, catTotals: wkCatTotals });
+    curWeekStart.setDate(curWeekStart.getDate() + 7);
+  }
+
+  let monthTotal = 0, monthPlanTotal = 0, maxWkDur = 0;
+  const monthCatTotals = {};
+  for (const k of Object.keys(PLAN_CATEGORIES)) monthCatTotals[k] = 0;
+  for (const wk of weeks) {
+    monthTotal += wk.total;
+    monthPlanTotal += wk.planTotal;
+    if (wk.total > maxWkDur) maxWkDur = wk.total;
+    for (const k of Object.keys(PLAN_CATEGORIES)) {
+      monthCatTotals[k] += (wk.catTotals[k] || 0);
+    }
+  }
+
+  // Prev month for deltas
+  let prevMonthTotal = 0, prevMonthEnt = 0;
+  for (let i = 0; i < 31; i++) {
+    const day = shiftDate(prevMonth.start, i);
+    if (day > prevMonth.end) break;
+    const stats = computeStatsForDate(day);
+    prevMonthTotal += stats.recordTotal;
+    prevMonthEnt += (stats.recordStats['entertainment'] || 0);
+  }
+
+  const curMonthEnt = monthCatTotals['entertainment'] || 0;
+
+  let h = '';
+  h += `<h2 style="font-size:18px;margin-bottom:4px">📊 月统计</h2>`;
+  h += `<div class="stats-v2-subtitle">${monthLabel} · ${fmtDateShort(month.start)} – ${fmtDateShort(month.end)}</div>`;
+
+  // Stacked bar chart
+  const catOrder = ['work', 'chores', 'exercise', 'recharge', 'entertainment'];
+  const catColors = { work: '#4A90D9', chores: '#4CAF84', exercise: '#F09B4A', recharge: '#8B7EC8', entertainment: '#E0687A' };
+  const MAX_BAR_H = 140;
+  h += `<div class="week-chart"><h3>每周分类分布</h3><div class="week-chart-bars">`;
+  for (const wk of weeks) {
+    const scale = maxWkDur > 0 ? MAX_BAR_H / maxWkDur : 0;
+    h += `<div class="week-chart-col"><div class="stack-wrap">`;
+    for (const catKey of catOrder) {
+      const dur = wk.catTotals[catKey] || 0;
+      if (dur <= 0) continue;
+      const segH = Math.max(2, Math.round(dur * scale));
+      h += `<div class="stack-seg" style="height:${segH}px;background:${catColors[catKey]}"></div>`;
+    }
+    h += `</div><div class="stack-label">${wk.label}</div><div class="stack-dur">${wk.total > 0 ? fmtDuration(wk.total) : ''}</div></div>`;
+  }
+  h += `</div><div class="week-chart-legend">`;
+  for (const catKey of catOrder) {
+    const cat = PLAN_CATEGORIES[catKey];
+    h += `<span><span class="dot" style="background:${catColors[catKey]}"></span>${cat.name}</span>`;
+  }
+  h += `</div></div>`;
+
+  // Data cards
+  const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  const avgPerDay = monthTotal > 0 ? Math.round(monthTotal / daysInMonth) : 0;
+  const coverage = monthPlanTotal > 0 && monthTotal > 0 ? Math.min(100, Math.round(monthPlanTotal / monthTotal * 100)) : 0;
+  const entPct = monthTotal > 0 ? Math.round(curMonthEnt / monthTotal * 100) : 0;
+  const deltaTotal = prevMonthTotal > 0 ? Math.round((monthTotal - prevMonthTotal) / prevMonthTotal * 100) : 0;
+  const deltaEnt = prevMonthEnt > 0 ? Math.round((curMonthEnt - prevMonthEnt) / prevMonthEnt * 100) : 0;
+  h += `<div class="data-cards">
+    <div class="data-card"><div class="card-label">月总记录</div><div class="card-val">${fmtDuration(monthTotal)}</div>${deltaTotal !== 0 ? `<div class="card-delta ${deltaTotal >= 0 ? 'up' : 'down'}">${deltaTotal >= 0 ? '↑' : '↓'}${Math.abs(deltaTotal)}%</div>` : ''}</div>
+    <div class="data-card"><div class="card-label">日均</div><div class="card-val">${fmtDuration(avgPerDay)}</div></div>
+    <div class="data-card"><div class="card-label">计划覆盖率</div><div class="card-val">${coverage}%</div></div>
+    <div class="data-card"><div class="card-label">消遣占比</div><div class="card-val">${entPct}%</div>${deltaEnt !== 0 ? `<div class="card-delta ${deltaEnt <= 0 ? 'up' : 'down'}">${deltaEnt <= 0 ? '↓' : '↑'}${Math.abs(deltaEnt)}%</div>` : ''}</div>
+  </div>`;
+
+  // Category summary table
+  h += `<div class="cat-summary"><h3>分类汇总</h3><table class="cat-summary-table"><thead><tr><th></th><th>分类</th><th>月总时长</th><th>日均</th><th>备注</th></tr></thead><tbody>`;
+  for (const catKey of catOrder) {
+    const cat = PLAN_CATEGORIES[catKey];
+    const totalMin = monthCatTotals[catKey] || 0;
+    const dailyAvg = Math.round(totalMin / daysInMonth);
+    let note = '';
+    if (catKey === 'entertainment' && entPct > 40) note = '⚠️ 偏高';
+    if (catKey === 'exercise' && dailyAvg < 15) note = '建议多动';
+    if (catKey === 'recharge' && dailyAvg < 10) note = '注意休息';
+    h += `<tr><td class="cat-icon-cell">${cat.icon}</td><td class="cat-name-cell">${cat.name}</td><td class="cat-dur-cell">${fmtDuration(totalMin)}</td><td class="cat-dur-cell">${fmtDuration(dailyAvg)}</td><td style="font-size:11px;color:var(--text-muted)">${note}</td></tr>`;
+  }
+  h += `</tbody></table></div>`;
+  return h;
 }
 
 function saveSyncUrl() {
