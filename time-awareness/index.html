@@ -1976,8 +1976,7 @@ function saveSyncUrl() {
 
 async function syncNow() {
   updateSyncStatus('syncing');
-  const ok = await pushToCloud(data);
-  updateSyncStatus(ok ? 'synced' : 'error');
+  const ok = await pullAndMerge();
   showToast(ok ? '同步成功' : '同步失败，请检查网络');
 }
 
@@ -2025,7 +2024,7 @@ function restoreActiveFromData() {
 
 async function pullAndMerge() {
   const cloudData = await pullFromCloud();
-  if (!cloudData) { updateSyncStatus('error'); return; }
+  if (!cloudData) { updateSyncStatus('error'); return false; }
   const mergedData = { sessions: mergeData(data, cloudData) };
   const needsPush = JSON.stringify(mergedData) !== JSON.stringify(cloudData);
   data = mergedData;
@@ -2034,6 +2033,7 @@ async function pullAndMerge() {
   if (needsPush) await pushToCloud(data);
   updateSyncStatus('synced');
   renderAll();
+  return true;
 }
 
 function switchTab(tab) {
@@ -2181,8 +2181,12 @@ window.addEventListener('beforeunload', () => {
 
 // Also attempt push when page becomes hidden (switching tabs, locking phone)
 window.addEventListener('visibilitychange', () => {
-  if (document.hidden && getSyncUrl() && initialSyncDone) {
+  if (!getSyncUrl() || !initialSyncDone) return;
+  if (document.hidden) {
     navigator.sendBeacon(getSyncUrl(), JSON.stringify(data));
+  } else {
+    // Refresh an already-open page after another device has written new data.
+    pullAndMerge();
   }
 });
 
