@@ -34,6 +34,7 @@ body {
   user-select: none;
 }
 .container { max-width: 520px; margin: 0 auto; padding: 16px 16px 100px; }
+.app-version { text-align: center; font-size: 10px; color: var(--text-muted); margin: -6px 0 10px; font-variant-numeric: tabular-nums; }
 
 .header { text-align: center; padding: 8px 0 12px; }
 .header .date { font-size: 15px; color: var(--text-secondary); font-weight: 500; }
@@ -702,6 +703,7 @@ const STORAGE_KEY = 'timeperception_v2_data';
 const STATE_KEY = 'timeperception_v2_state';
 const SYNC_URL_KEY = 'timeperception_sync_url';
 const SYNC_DEBOUNCE_MS = 3000;
+const APP_VERSION = '2026.08.01-1041.01';
 
 // ========== HELPERS ==========
 function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
@@ -1293,6 +1295,8 @@ function renderApp() {
     html+=renderCalendar();
   }
 
+  html+=`<div class="app-version">版本 ${APP_VERSION}</div>`;
+
   // Mode toggle
   html+=`<div class="mode-toggle">
     <button class="mode-btn ${currentMode==='plan'?'active':''}" onclick="currentMode='plan';renderAll()">📋 计划</button>
@@ -1593,7 +1597,8 @@ function renderApp() {
   // Sync settings
   const syncUrl=getSyncUrl();
   html+=`<div class="settings-section">
-    <h3>🔄 云同步 (Google Sheets)</h3>`;
+    <h3>🔄 云同步 (Google Sheets)</h3>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">当前版本：${APP_VERSION}</p>`;
   if(syncUrl){
     html+=`<p style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">当前同步地址已设置</p>
     <div class="btn-group">
