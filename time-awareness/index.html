@@ -722,6 +722,30 @@ function todayStr() {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function debounce(fn, ms) { let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),ms); }; }
+function timestampOf(s) {
+  const value = s && (s.updatedAt || s.end || s.start);
+  const time = value ? new Date(value).getTime() : 0;
+  return Number.isFinite(time) ? time : 0;
+}
+function mergeSession(localSession, cloudSession) {
+  const localTime = timestampOf(localSession);
+  const cloudTime = timestampOf(cloudSession);
+  if (localTime !== cloudTime) return localTime > cloudTime ? localSession : cloudSession;
+  // Legacy records have no updatedAt. An ended copy is newer than a stale running copy.
+  if (localSession.end && !cloudSession.end) return localSession;
+  if (cloudSession.end && !localSession.end) return cloudSession;
+  return localSession;
+}
+function mergeData(localData, cloudData) {
+  const localById = new Map(localData.sessions.map(s => [s.id, s]));
+  const merged = cloudData.sessions.map(cloudSession => {
+    const localSession = localById.get(cloudSession.id);
+    if (!localSession) return cloudSession;
+    localById.delete(cloudSession.id);
+    return mergeSession(localSession, cloudSession);
+  });
+  return [...merged, ...localById.values()];
+}
 
 // ========== DATE UTILITIES ==========
 function fmtDateShort(iso) {
@@ -993,9 +1017,12 @@ function startPlan(category) {
   const endTime = new Date(Date.now() + PLAN_DURATION_MIN * 60000).toISOString();
   if (activePlan) {
     const prev = data.sessions.find(s => s.id === activePlan.id);
-    if (prev && new Date(prev.end) > new Date(now)) prev.end = now;
+    if (prev && new Date(prev.end) > new Date(now)) {
+      prev.end = now;
+      prev.updatedAt = now;
+    }
   }
-  const session = { id: uid(), type: 'plan', category, start: now, end: endTime };
+  const session = { id: uid(), type: 'plan', category, start: now, end: endTime, updatedAt: now };
   data.sessions.push(session);
   activePlan = session;
   saveDataAndSync();
@@ -1005,7 +1032,10 @@ function startPlan(category) {
 function stopPlan() {
   if (!activePlan) return;
   const session = data.sessions.find(s => s.id === activePlan.id);
-  if (session) { session.end = new Date().toISOString(); }
+  if (session) {
+    session.end = new Date().toISOString();
+    session.updatedAt = session.end;
+  }
   activePlan = null;
   saveDataAndSync();
   renderAll();
@@ -1028,7 +1058,7 @@ function cleanupExpiredPlans() {
 function startRecord(category) {
   const now = new Date().toISOString();
   if (activeRecord) endRecord(now);
-  const session = { id: uid(), type: 'record', category, start: now, end: null };
+  const session = { id: uid(), type: 'record', category, start: now, end: null, updatedAt: now };
   data.sessions.push(session);
   activeRecord = session;
   recordStartTime = Date.now();
@@ -1042,7 +1072,10 @@ function startRecord(category) {
 function endRecord(endTime) {
   if (!activeRecord) return;
   const session = data.sessions.find(s => s.id === activeRecord.id);
-  if (session) session.end = endTime || new Date().toISOString();
+  if (session) {
+    session.end = endTime || new Date().toISOString();
+    session.updatedAt = session.end;
+  }
   stopRecordTimer(activeRecord.id);
   activeRecord = null;
   recordStartTime = null;
@@ -1134,6 +1167,7 @@ function updateSession(id, updates) {
   const s = data.sessions.find(x=>x.id===id);
   if(!s) return;
   Object.assign(s, updates);
+  s.updatedAt = new Date().toISOString();
   saveDataAndSync();
   showEditModal = false;
   editingSession = null;
@@ -1992,12 +2026,12 @@ function restoreActiveFromData() {
 async function pullAndMerge() {
   const cloudData = await pullFromCloud();
   if (!cloudData) { updateSyncStatus('error'); return; }
-  // Merge: cloud sessions + local sessions that aren't in cloud
-  const cloudIds = new Set(cloudData.sessions.map(s=>s.id));
-  const localOnly = data.sessions.filter(s=>!cloudIds.has(s.id));
-  data.sessions = [...cloudData.sessions, ...localOnly];
+  const mergedData = { sessions: mergeData(data, cloudData) };
+  const needsPush = JSON.stringify(mergedData) !== JSON.stringify(cloudData);
+  data = mergedData;
   saveLocal(data);
   restoreActiveFromData();
+  if (needsPush) await pushToCloud(data);
   updateSyncStatus('synced');
   renderAll();
 }
@@ -2113,11 +2147,12 @@ async function init() {
     updateSyncStatus('syncing');
     const cloudData = await pullFromCloud();
     if(cloudData){
-      const cloudIds=new Set(cloudData.sessions.map(s=>s.id));
-      const localOnly=data.sessions.filter(s=>!cloudIds.has(s.id));
-      data.sessions=[...cloudData.sessions,...localOnly];
+      const mergedData={sessions:mergeData(data, cloudData)};
+      const needsPush=JSON.stringify(mergedData)!==JSON.stringify(cloudData);
+      data=mergedData;
       saveLocal(data);
       restoreActiveFromData();
+      if(needsPush) await pushToCloud(data);
       updateSyncStatus('synced');
       // Only mark sync done if we successfully pulled & merged —
       // otherwise our local data might be stale and we should NOT push it
